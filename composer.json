@@ -1,5 +1,14 @@
 {
+    "name": "kriseev/vkschoolbot",
+    "description": "Бот для ВКонтакте, который может по запросу написать в ответе расписание, изменения на следующий день или домашнее задание на завтра из специальной базы данных",
+    "type": "project",
     "require": {
         "vkcom/vk-php-sdk": "^5.101"
-    }
+    },
+    "authors": [
+        {
+            "name": "Kriseev Mikhail",
+            "email": "mkris.yt@gmail.com"
+        }
+    ]
 }

@@ -6,3 +6,5 @@ NumericChanges
 changes
 APIInfo.php
 dbconnectinfo.php
+
+/vendor/
