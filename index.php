@@ -1,38 +1,18 @@
 <?php
+ini_set('display_errors', 'Off');
+require_once 'vendor/autoload.php';
 require 'APIInfo.php';
 $days = [1 => "понедельник", 2 => "вторник", 3 => "среду", 4 => "четверг", 5 => "пятницу", 6 => "субботу"];
-function sendMessage($message, $token, $peer_id) {
-    $request_params = array(
-'message' => $message,
-'peer_id' => $peer_id,
-'access_token' => $token,
-'v' => '5.85'
-);
-    $context = stream_context_create(array(
-	    'http' => array(
-		    'method' => 'POST',
-		    'header' => "Content-type: application/x-www-form-urlencoded\r\n",
-		    'content' => http_build_query($request_params)
-	    )
+$vk = new \VK\Client\VKApiClient();
+function sendMessage($text, $peer)
+{
+    global $vk, $token;
+    $vk->messages()->send($token, array(
+        'message' => $text,
+        'peer_id' => $peer,
+	'random_id' => 0
     ));
-
-    return file_get_contents('https://api.vk.com/method/messages.send?', false, $context);
 }
-
-function sendKbd($token, $peer_id) {
-	$request_params = array(
-		'message' => "Теперь вы можете пользоваться клавишами! :)",
-		'keyboard' => '{"one_time":false,"buttons":[[{"action":{"type":"text","label":"дз"},"color":"primary"},{"action":{"type":"text","label":"замены"},"color":"primary"}],[{"action":{"type":"text","label":"расписание на сегодня"},"color":"primary"}],[{"action":{"type":"text","label":"расписание на завтра"},"color":"primary"}]]}',
-		'peer_id' => $peer_id,
-		'access_token' => $token,
-		'v' => '5.85'
-);
-     $get_params = http_build_query($request_params);
-
-    return file_get_contents('https://api.vk.com/method/messages.send?'. $get_params);
-}
-
-
 function getAllHomework()
 {
     require 'dbconnectinfo.php';
@@ -84,30 +64,51 @@ function applyChanges ($sched, $changes) {
      return $newSchedule;
  
 }
-$data = json_decode(file_get_contents('php://input'));
-switch ($data->type) {
-    case 'confirmation':echo $confirmation;
-     break;
-     case 'message_edit':
+
+function sendKeyboard($peer_id, $msg)
+{
+    
+    global $vk, $token;
+    $res = $vk->messages()->send($token, array(
+        'peer_id' => $peer_id,
+        'random_id' => 1,
+        'message' => $msg,
+        'keyboard'=> '{"one_time":false,"buttons":[[{"action":{"type":"text","label":"дз"},"color":"primary"},{"action":{"type":"text","label":"дз на сегодня"},"color":"primary"}],[{"action":{"type":"text","label":"все дз"},"color":"primary"},{"action":{"type":"text","label":"все расписание"},"color":"primary"}],[{"action":{"type":"text","label":"расписание на сегодня"},"color":"primary"}],[{"action":{"type":"text","label":"расписание на завтра"},"color":"primary"},{"action":{"type":"text","label":"замены"},"color":"primary"}]]}'
+    ));
+    
+}
+
+$data = json_decode(file_get_contents("php://input"));
+
+switch($data->type)
+{
+    case 'confirmation':
+        echo $confirmation;
+        break;
     case 'message_new':
-        echo "ok";
-        $message = '';
-         $peer_id = $data->object->from_id;
-         $q = 'https://api.vk.com/method/users.get?'.http_build_query(array(
- 'user_ids' => $peer_id, 
- 'access_token' => $token,
- 'v' => '5.101'
- ));
-         $userinfo = file_get_contents($q);
-         $username = json_decode($userinfo) -> response[0] -> first_name;
- 
-         $user_id = $data->object->from_id;
-         $text = $data->object->text;
-         switch(mb_strtolower($text)) {
-	 case "start":
-	 case "начать":
-		 sendKbd($token, $peer_id);
-            break;
+    case 'message_edit':
+        
+        echo 'ok';
+        $peer = $data->object->message->peer_id;
+        mb_internal_encoding(mb_detect_encoding($data->object->message->text));
+        $cmd = mb_split('] ', mb_strtolower($data->object->message->text));
+        
+        switch(end($cmd))
+        {
+            case '':
+            
+                if(isset($data->object->message->action))
+                {
+                if($data->object->message->action->type == "chat_invite_user")
+                {
+                    sendKeyboard($peer, "Всем привет\nТеперь в этой беседе можно пользоваться клавишами бота :)");
+                    
+                }
+                }
+                break;
+            case 'начать':
+                sendKeyboard($peer, "Теперь здесь можно пользоваться клавишами бота :)");
+                break;
             case "дз":
             case "домашка":
             case "домашнее задание":
@@ -119,7 +120,7 @@ switch ($data->type) {
             case "что задали":
             case "че задали":
             case "задание":
-                $now = date("N", $data->object->date);
+                $now = date("N", $data->object->message->date);
                  if($now == 7 || $now == 6) {
                     $homework = getHomework(1);
                      if(mysqli_num_rows($homework) == 0) {
@@ -141,10 +142,10 @@ switch ($data->type) {
                          }
                      }
                  }
-                sendMessage($message, $token, $data->object->peer_id);
+                sendMessage($message, $peer);
                  break;
                  case 'дз на сегодня':
-                $now = date("N", $data->object->date);
+                $now = date("N", $data->object->message->date);
                 if($now == 7) {
                     $homework = getHomework(1);
                      if(mysqli_num_rows($homework) == 0) {
@@ -166,35 +167,35 @@ switch ($data->type) {
                          }
                      }
                  }
-                sendMessage($message, $token, $data->object->peer_id);
+                sendMessage($message, $peer);
                  break;
                  case "замены":
                 case "изменения":
                     $message = file_get_contents("changes");
-                    sendMessage($message, $token, $data->object->peer_id);
+                    sendMessage($message, $peer);
                      break;
                  case 'расписание на завтра':
                  case 'расписание':
-                    $now = date("N", $data->object->date);
+                    $now = date("N", $data->object->message->date);
                      if($now == 7 || $now == 6) {
                         $message = "Расписание на понедельник:\n".file_get_contents('days/1');
  
                      } else {
                         $message = 'Расписание на '.$days[$now + 1].":\n".file_get_contents('days/'.($now + 1));
-		     }
-		     sendMessage($message, $token, $data->object->peer_id);
+                     }
+                     sendMessage($message, $peer);
                      break;
                      case 'расписание на сегодня':
-                        $now = date("N", $data->object->date);
+                        $now = date("N", $data->object->message->date);
                          if($now == 7) {
                             $message = "Сегодняя уроков нет :)\nЛадно, расписание на понедельник:\n".file_get_contents('days/1');
  
                          } else {
                             $message = 'Расписание на '.$days[$now].":\n".file_get_contents('days/'.($now));
                          }
-                        sendMessage($message, $token, $data->object->peer_id);
+                        sendMessage($message, $peer);
                          break;
-		     case "все дз":
+                     case "все дз":
                      $homework = getAllHomework();
                      if(mysqli_num_rows($homework) == 0) {
                         $message = "Задание отсутствует";
@@ -203,27 +204,23 @@ switch ($data->type) {
                          while($row = mysqli_fetch_row($homework)) {
                             $message.= "\n• ".$row[0].": ".$row[1];
                          }
-		     }
-                     sendMessage($message, $token, $data->object->peer_id);
-		     break;
-		     case 'всё расписание':
-                     case 'все расписание':
-		     case 'расписание на всю неделю':
-			     $message = "Расписание";
-			     $message .= "\nНа понедельник:\n".file_get_contents('days/1');
-			     $message .= "\nНа вторник:\n".file_get_contents('days/2');
-			     $message .= "\nНа среду:\n".file_get_contents('days/3');
-			     $message .= "\nНа четверг:\n".file_get_contents('days/4');
-			     $message .= "\nНа пятницу:\n".file_get_contents('days/5');
-			     $message .= "\nНа субботу:\n".file_get_contents('days/6');
-			     sendMessage($message, $token, $data->object->peer_id);
-			     break;
-                         
                      }
- 
- 
- 
+                     sendMessage($message, $peer);
                      break;
-                 }
+                     case 'всё расписание':
+                     case 'все расписание':
+                     case 'расписание на всю неделю':
+                             $message = "Расписание";
+                             $message .= "\nНа понедельник:\n".file_get_contents('days/1');
+                             $message .= "\nНа вторник:\n".file_get_contents('days/2');
+                             $message .= "\nНа среду:\n".file_get_contents('days/3');
+                             $message .= "\nНа четверг:\n".file_get_contents('days/4');
+                             $message .= "\nНа пятницу:\n".file_get_contents('days/5');
+                             $message .= "\nНа субботу:\n".file_get_contents('days/6');
+                             sendMessage($message, $peer);
+                             break;
+            }   
+        break;
+}
 
-                 ?>
+
