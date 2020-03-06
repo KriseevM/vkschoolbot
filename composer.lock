@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "873e4f1319d404d946f5652fa6a768ba",
-    "content-hash": "f0d4e78cbab9f917cf8049dc6da0e00e",
+    "hash": "b10e6dcafe41ba98fabe99610f829eb9",
+    "content-hash": "61c25bf10fb3cea2905d4a708a955b1b",
     "packages": [
         {
             "name": "vkcom/vk-php-sdk",
