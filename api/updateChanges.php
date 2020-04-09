@@ -2,7 +2,11 @@
 $input = file_get_contents('php://input');
 if($input != "")
 {
-	$newchanges = json_decode($input);
+        $data = json_decode($input);
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $key = $data->key;
+        include 'checkAuth.php';
+	$newchanges = $data->changes;
 	if(isset($newchanges->TextChanges) && isset($newchanges->NumericChanges))
 	{
 		$fp = fopen('../changes', 'w');

@@ -8,3 +8,4 @@ APIInfo.php
 dbconnectinfo.php
 
 /vendor/
+/nbproject

@@ -1,4 +1,7 @@
 <?php
+$ip = $_SERVER['REMOTE_ADDR'];
+$key = $_GET['key'];
+include 'checkAuth.php';
 require_once "../dbconnectinfo.php";
 $link = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
 $res = mysqli_query ($link, "SELECT ID, Subject FROM Homeworkdata");
