@@ -1,10 +1,14 @@
 <?php
 $ip = $_SERVER['REMOTE_ADDR'];
+if(!isset($_GET['key'])) 
+{
+    die('{"error":"Key is required for authorisation","errorcode":6}');
+}
 $key = $_GET['key'];
 include 'checkAuth.php';
 require_once "../dbconnectinfo.php";
-$link = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
-$res = mysqli_query ($link, "SELECT ID, Subject FROM Homeworkdata");
+$link = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname) or die("{\"error\":\"Failed to connect to database.\",\"errorcode\":1}");
+$res = mysqli_query ($link, "SELECT ID, Subject FROM Homeworkdata") or die('{"error":"Failed to execute SQL query","errorcode":2}');;
 
 
 $output = array();

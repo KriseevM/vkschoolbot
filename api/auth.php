@@ -40,34 +40,34 @@ function Salt() {
 } 
 
 require_once 'APIInternalInfo.php';
-$link = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname) or die("{\"error\":\"Failed to connect to database.\"}");
+$link = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname) or die("{\"error\":\"Failed to connect to database.\",\"errorcode\":1}");
 $user = $_POST["user"];   
 $pass = $_POST["pass"];
 $ip = $_SERVER['REMOTE_ADDR'];
 $time = time();
 $check_query = "select * from $dbusernamestable where user=\"$user\" and pass=PASSWORD(\"$pass\")";
-$res = mysqli_query($link, $check_query);
+$res = mysqli_query($link, $check_query) or die('{"error":"Failed to execute SQL query","errorcode":2}');
 $state = (mysqli_num_rows($res) > 0);
 if($state)
 {
     $check_exists_query = "Select passkey, expiration_time from $dbkeystable where user=\"$user\" and ip=\"$ip\"";
-    $check_exists_res = mysqli_query($link, $check_exists_query) or die("{\"error\":\"Could not check if there is a key with same parameters because of problems with database\"}");
+    $check_exists_res = mysqli_query($link, $check_exists_query) or die('{"error":"Failed to execute SQL query","errorcode":2}');
     if(mysqli_num_rows($check_exists_res) > 0)
     {
         $key = mysqli_fetch_row($check_exists_res)[0];
         echo "{\"key\":\"$key\"}";
         $reset_time_query = "Update $dbkeystable Set expiration_time=".($time+1800)." where passkey=\"$key\"";
-        mysqli_query($link, $reset_time_query);
+        mysqli_query($link, $reset_time_query) or die('{"error":"Failed to execute SQL query","errorcode":2}');
         exit();
     }
     $pre_key = Salt().$time.Salt().$ip.Salt().$user.Salt();
     $key = hash('sha256', $pre_key);    
     $add_key_query = "Insert into $dbkeystable (passkey,user,ip,expiration_time) values(\"$key\",\"$user\",\"$ip\",".($time+1800).")";
-    mysqli_query($link, $add_key_query) or die ("{\"error\":\"Login and password accepted but there was problem with database so authorisation failed\"}");
+    mysqli_query($link, $add_key_query) or die('{"error":"Failed to execute SQL query","errorcode":2}');
     echo "{\"key\":\"$key\"}";
 }
 else 
 {
-    die("{\"error\":\"Incorrect login or password\"}");
+    die("{\"error\":\"Incorrect login or password\",\"errorcode\":3}");
 }
 
