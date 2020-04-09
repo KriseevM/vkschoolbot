@@ -1,5 +1,4 @@
 <?php
-require_once "../dbconnectinfo.php";
 
 $input = file_get_contents('php://input');
 if(input != "")
@@ -8,6 +7,7 @@ if(input != "")
         $ip = $_SERVER['REMOTE_ADDR'];
         $key = $data->key;
         include 'checkAuth.php';
+        require_once "../dbconnectinfo.php";
         $link = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
 	if(isset($data->ID))
 	{
