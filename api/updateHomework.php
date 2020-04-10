@@ -22,7 +22,7 @@ if(input != "")
         require_once "../dbconnectinfo.php";
         $link = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname) or die("{\"error\":\"Failed to connect to database.\",\"errorcode\":1}");
 	$q = "UPDATE Homeworkdata SET Homework='".$data -> Homework."' WHERE ID = ".$data ->ID;
-	$res = mysqli_query($link, $q);
+	$res = mysqli_query($link, $q) or die('{"error":"Failed to execute SQL query","errorcode":2}');;
 	echo "OK";
 	
 }
