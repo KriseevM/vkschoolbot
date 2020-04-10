@@ -4,6 +4,10 @@ if($input != "")
 {
         $data = json_decode($input);
         $ip = $_SERVER['REMOTE_ADDR'];
+        if(!isset($data->key)) 
+        {
+            die('{"error":"Key is required for authorisation","errorcode":6}');
+        }
         $key = $data->key;
         include 'checkAuth.php';
 	$newchanges = $data->changes;

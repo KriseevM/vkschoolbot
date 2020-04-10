@@ -1,5 +1,9 @@
 <?php
 $ip = $_SERVER['REMOTE_ADDR'];
+if(!isset($_GET['key'])) 
+{
+    die('{"error":"Key is required for authorisation","errorcode":6}');
+}
 $key = $_GET['key'];
 include 'checkAuth.php';
 require_once "../dbconnectinfo.php";
