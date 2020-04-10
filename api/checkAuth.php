@@ -1,4 +1,8 @@
 <?php
+if(!isset($key) || !isset($ip))
+{
+    die('{"error":"Missing required parameters for authorisation","errorcode":6}');
+}
 require 'APIInternalInfo.php';
 $query = "Select expiration_time from $dbkeystable where passkey=\"$key\" and ip=\"$ip\"";
 $time = time();
