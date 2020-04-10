@@ -9,17 +9,27 @@ if($input != "")
             die('{"error":"Key is required for authorisation","errorcode":6}');
         }
         $key = $data->key;
+        if(!isset($data->changes))
+        {
+            die('{"error":"Missing required changes parameter","errorcode":7}');
+        }
+        if(!isset($data->changes->TextChanges) || !isset($data->changes->NumericChanges))
+        {
+            die('{"error":"Parameter changes is incorrect","errorcode":7}');
+        }
+        else if(count($data->changes->NumericChanges) != 8)
+        {
+            die('{"error":"Parameter changes is incorrect","errorcode":7}');
+        }
         include 'checkAuth.php';
 	$newchanges = $data->changes;
-	if(isset($newchanges->TextChanges) && isset($newchanges->NumericChanges))
-	{
-		$fp = fopen('../changes', 'w');
-		fwrite($fp, $newchanges->TextChanges);
-		fclose($fp);
-		$fc = fopen('../NumericChanges', 'w');
-		fwrite($fc, implode("\n", $newchanges->NumericChanges));
-		fclose($fc);
-		echo 'OK';
-	}
+	$fp = fopen('../changes', 'w');
+	fwrite($fp, $newchanges->TextChanges);
+	fclose($fp);
+	$fc = fopen('../NumericChanges', 'w');
+	fwrite($fc, implode("\n", $newchanges->NumericChanges));
+	fclose($fc);
+	echo 'OK';
+	
 }
 ?>

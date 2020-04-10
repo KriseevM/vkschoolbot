@@ -11,13 +11,19 @@ if(input != "")
         }
         $key = $data->key;
         include 'checkAuth.php';
+        if(!isset($data->ID))
+        {
+            die('{"error":"Missing required parameter ID","errorcode":7}');
+        }
+        if(!isset($data->Homework))
+        {
+            die('{"error":"Missing required parameter Homework","errorcode":7}');
+        }
         require_once "../dbconnectinfo.php";
         $link = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname) or die("{\"error\":\"Failed to connect to database.\",\"errorcode\":1}");
-	if(isset($data->ID))
-	{
-		$q = "UPDATE Homeworkdata SET Homework='".$data -> Homework."' WHERE ID = ".$data ->ID;
-		$res = mysqli_query($link, $q);
-		echo "OK";
-	}
+	$q = "UPDATE Homeworkdata SET Homework='".$data -> Homework."' WHERE ID = ".$data ->ID;
+	$res = mysqli_query($link, $q);
+	echo "OK";
+	
 }
 ?>
