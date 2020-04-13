@@ -1,8 +1,8 @@
 <?php
 
 $dbhost = "localhost";
-$dbname = "your users db name";
-$dbuser = "your db user";
-$dbpass = "your db user password";
+$dbname = "bot_auth";
+$dbuser = "kriseev";
+$dbpass = "kriseev237";
 $dbusernamestable = "UserData"; //Имя таблицы с логинами и паролями
 $dbkeystable = "PassKeys"; // имя таблицы с ключами
