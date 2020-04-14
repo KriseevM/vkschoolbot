@@ -29,7 +29,7 @@ if($input != "")
 	$fc = fopen('../NumericChanges', 'w');
 	fwrite($fc, implode("\n", $newchanges->NumericChanges));
 	fclose($fc);
-	echo 'OK';
+	echo '{"result":true}';
 	
 }
 ?>
