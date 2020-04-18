@@ -1,20 +1,22 @@
 <?php
 function getNumSchedule($day) {
     if($day < 1 || $day > 6) {
-        echo false;
          return false;
      } else {
         $schedule = explode ("\n", file_get_contents("../NumericDays/".$day));
+        for($i = 0; $i < count($schedule); $i++)
+        {
+            $schedule[$i] = intval($schedule[$i]);
+        }
          return $schedule;
      }
 }
 function getTextSchedule($day) {
     if($day < 1 || $day > 6) {
-        echo false;
          return false;
      } else {
-        $schedule = file_get_contents("../days/".$day);
-         return $schedule;
+        $tschedule = file_get_contents("../days/".$day);
+         return $tschedule;
      }
 }
 
