@@ -24,10 +24,13 @@ if($input != "")
         $key = $data->key;
         
         include 'checkAuth.php';
-	$fp = fopen('../changes', 'w');
+	$fp = fopen('../changes', 'wb');
+        if(!$fp) {die('{"error":"Could not open required file", "errorcode":8}');}
 	fwrite($fp, $data->TextChanges);
 	fclose($fp);
-	$fc = fopen('../NumericChanges', 'w');
+	$fc = fopen('../NumericChanges', 'wb');
+        
+        if(!$fc) {die('{"error":"Could not open required file", "errorcode":8}');}
 	fwrite($fc, implode("\n", $data->NumericChanges));
 	fclose($fc);
 	echo '{"result":true}';
