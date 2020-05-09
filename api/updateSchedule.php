@@ -26,11 +26,12 @@ if($input != "")
         include 'checkAuth.php';
         for($i = 1; $i <= 6; $i++)
         {
-            $fp = fopen('../days/'.$i, 'w');
+            $fp = fopen('../days/'.$i, 'wb');
+            if(!$fp) {die('{"error":"Could not open required file", "errorcode":8}');}
             fwrite($fp, $data->TextSchedule[$i-1]);
             fclose($fp);
-            $fc = fopen('../NumericDays/'.$i, 'w');
-            echo implode("\n", $data->NumericSchedule[$i-1])."..";
+            $fc = fopen('../NumericDays/'.$i, 'wb');
+            if(!$fc) {die('{"error":"Could not open required file", "errorcode":8}');}
             fwrite($fc, implode("\n", $data->NumericSchedule[$i-1]));
             fclose($fc);
         }
