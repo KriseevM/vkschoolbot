@@ -29,14 +29,14 @@ ini_set('display_errors', 'Off');
 
 function Salt() { 
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-()#@!$%^&*=+.'; 
-    $randomString = ''; 
+    $random_string = ''; 
     $n = rand(7, 15);
     for ($i = 0; $i < $n; $i++) { 
         $index = rand(0, strlen($characters) - 1); 
-        $randomString .= $characters[$index]; 
+        $random_string .= $characters[$index]; 
     } 
   
-    return $randomString; 
+    return $random_string; 
 } 
 
 require_once 'APIInternalInfo.php';
