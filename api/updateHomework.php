@@ -4,7 +4,6 @@ $input = file_get_contents('php://input');
 if($input != "")
 {
 	$data = json_decode($input);
-        $ip = $_SERVER['REMOTE_ADDR'];
         $validator = new JsonSchema\Validator;
         $schema = '{"type":"object", "properties":'
                 . '{"key":{"type":"string", "required":"true"},'

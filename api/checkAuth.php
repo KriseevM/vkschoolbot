@@ -1,4 +1,5 @@
 <?php
+$ip = $_SERVER['REMOTE_ADDR'];
 if(!isset($key) || !isset($ip))
 {
     die('{"error":"Missing required parameters for authorisation","errorcode":6}');
