@@ -1,6 +1,5 @@
 <?php
 require_once "ChangesData.php";
-$ip = $_SERVER['REMOTE_ADDR'];
 if(!isset($_GET['key'])) 
 {
     die('{"error":"Key is required for authorisation","errorcode":6}');

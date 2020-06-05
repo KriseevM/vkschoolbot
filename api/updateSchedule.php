@@ -3,9 +3,7 @@ require_once '../vendor/autoload.php';
 $input = file_get_contents('php://input');
 if($input != "")
 {
-        $data = json_decode($input);
-        $ip = $_SERVER['REMOTE_ADDR'];
-        
+        $data = json_decode($input);        
         $validator = new JsonSchema\Validator;
         $schema = '{"type":"object", "properties":'
                 . '{"key":{"type":"string", "required":"true"},'
