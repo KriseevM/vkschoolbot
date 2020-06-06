@@ -4,30 +4,26 @@ if(!isset($key) || !isset($ip))
 {
     die('{"error":"Missing required parameters for authorisation","errorcode":6}');
 }
-require 'APIInternalInfo.php';
-$query = "Select expiration_time from $dbkeystable where passkey=\"$key\" and ip=\"$ip\"";
+$query = "Select expiration_time from PassKeys where passkey=\"$key\" and ip=\"$ip\"";
 $time = time();
-$userdblink = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname) or die("{\"error\":\"Failed to connect to database.\",\"errorcode\":1}");;
-$res = mysqli_query($userdblink, $query) or die('{"error":"Failed to execute SQL query","errorcode":2}');
-if(mysqli_num_rows($res) == 0)
+$db = new SQLite3("../bot.db");
+$res = $db->query($query)->fetchArray(SQLITE3_NUM);
+if($res == false)
 {
-    $auth = false;
     die("{\"error\":\"Key is invalid or your ip address does not match original ip address\",\"errorcode\":4}");
 }
 else 
 {
-    $exp_time = mysqli_fetch_row($res)[0];
+    $exp_time = $res[0];
     if($time > $exp_time)
     {
-        $remove_query = "Delete from $dbkeystable where passkey=\"$key\"";
-        mysqli_query($userdblink, $remove_query) or die('{"error":"Failed to execute SQL query","errorcode":2}');
-        $auth = false;
+        $remove_query = "Delete from PassKeys where passkey=\"$key\"";
+        $db->exec($remove_query) or die('{"error":"Failed to execute SQL query","errorcode":2}');
         die("{\"error\":\"Key is expired\",\"errorcode\":5}");
     }
     else
     {
-        $reset_time_query = "Update $dbkeystable Set expiration_time=".($time+1800)." where passkey=\"$key\"";
-        mysqli_query($userdblink, $reset_time_query) or die('{"error":"Failed to execute SQL query","errorcode":2}');
-        $auth = true;
+        $reset_time_query = "Update PassKeys Set expiration_time=".($time+1800)." where passkey=\"$key\"";
+        $db->exec($reset_time_query) or die('{"error":"Failed to execute SQL query","errorcode":2}');
     }
 }

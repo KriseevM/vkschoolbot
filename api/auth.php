@@ -1,5 +1,5 @@
 <?php
-ini_set('display_errors', 'Off');
+ini_set('display_errors', 'On');
 // система авторизации с использованием простейшего ключа, формируемого
 // из данных клиента и соли, преобразованных через sha-256
 // При отправке любого запроса необходим будет параметр key, иначе будет возвращена ошибка
@@ -50,10 +50,10 @@ if($res->fetchArray(SQLITE3_ASSOC) != false)
 {
     $new_time = $time+1800;
     $check_exists_query = "Select passkey from PassKeys where user=\"$user\" and ip=\"$ip\" and expiration_time > $time";
-    $check_exists_res = $db->query($check_exists_query);
-    if($check_exists_res->fetchArray(SQLITE3_ASSOC) != false)
+    $check_exists_res = $db->query($check_exists_query)->fetchArray(SQLITE3_ASSOC);
+    if($check_exists_res != false)
     {
-        $key = $check_exists_res["key"];
+        $key = $check_exists_res["passkey"];
         echo "{\"key\":\"$key\"}";
         $reset_time_query = "Update PassKeys Set expiration_time=$new_time where passkey=\"$key\"";
         $db->exec($reset_time_query);
