@@ -5,15 +5,14 @@ if(!isset($_GET['key']))
 }
 $key = $_GET['key'];
 include 'checkAuth.php';
-require_once "../dbconnectinfo.php";
-$link = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname) or die("{\"error\":\"Failed to connect to database.\",\"errorcode\":1}");
-$res = mysqli_query ($link, "SELECT ID, Subject FROM Homeworkdata") or die('{"error":"Failed to execute SQL query","errorcode":2}');;
+$db = new SQLite3("../bot.db");
+$res = $db->query("SELECT ID, Subject FROM Homeworkdata");
 
 
 $output = array();
-while($row = mysqli_fetch_row($res))
+while($row = $res->fetchArray(SQLITE3_ASSOC))
 {
-	$output[$row[0]] = $row[1];
+	$output[$row["ID"]] = $row["Subject"];
 }
 echo json_encode($output, JSON_UNESCAPED_UNICODE);
 ?>

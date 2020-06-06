@@ -21,10 +21,9 @@ if($input != "")
         }
         $key = $data->key;
         include 'checkAuth.php';
-        require_once "../dbconnectinfo.php";
-        $link = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname) or die("{\"error\":\"Failed to connect to database.\",\"errorcode\":1}");
-	$q = "UPDATE Homeworkdata SET Homework='".$data -> Homework."' WHERE ID = ".$data ->ID;
-	$res = mysqli_query($link, $q) or die('{"error":"Failed to execute SQL query","errorcode":2}');;
+        $db = new SQLite3("../bot.db");
+        $query = "UPDATE Homeworkdata SET Homework='".$data -> Homework."' WHERE ID = ".$data ->ID;
+	$db->exec($query) or die('{"error":"Failed to execute SQL query","errorcode":2}');;
 	echo '{"result":true}';
 	
 }
