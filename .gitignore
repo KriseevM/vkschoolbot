@@ -9,3 +9,5 @@ dbconnectinfo.php
 
 /vendor/
 /nbproject
+
+bot.db
