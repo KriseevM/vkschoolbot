@@ -5,7 +5,6 @@ if(!isset($_GET['key']))
 }
 $key = $_GET['key'];
 include 'checkAuth.php';
-$db = new SQLite3("../bot.db");
 $res = $db->query("SELECT ID, Subject FROM Homeworkdata");
 
 
