@@ -9,6 +9,10 @@ if(!isset($_GET['id']))
 {
     die('{"error":"Missing required id parameter","errorcode":7}');
 }
+if(!is_numeric($_GET['id']))
+{
+    die('{"error":"Parameters are invalid","errorcode":7}');
+}
 $input = $_GET['id'];   
 $res = $db->query("SELECT * FROM Homeworkdata WHERE ID=".$input)->fetchArray(SQLITE3_NUM) or die('{"error":"Failed to execute SQL query","errorcode":2}');
 $data = array('ID' => intval($res[0]), 'Homework' => $res[2]);
