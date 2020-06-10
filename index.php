@@ -11,7 +11,7 @@ function GetHomeworkMessage(string $empty_hw_msg, string $hw_header, int $day)
     $message = "";
     while($row = $homework->fetchArray(SQLITE3_ASSOC))
     {
-        $message .= "🌝".$row["Subject"].": ".$row["Homework"]."\n";
+        $message .= "∙ ".$row["Subject"].": ".$row["Homework"]."\n";
     }
     if($message == "")
     {
