@@ -29,5 +29,5 @@ else
     }
     $userdel_req = "DELETE FROM UserData WHERE user=\"$user\";";
     $state = $db->exec($userdel_req);
-    echo "{success:$state}";
+    echo json_encode(array('success' => $result), JSON_UNESCAPED_UNICODE); 
 }

@@ -32,7 +32,7 @@ if($input != "")
         if(!$fc) {die('{"error":"Could not open required file", "errorcode":8}');}
 	fwrite($fc, implode("\n", $data->NumericChanges));
 	fclose($fc);
-	echo '{"result":true}';
+	echo '{"success":true}';
 	
 }
 else

@@ -34,7 +34,7 @@ if($input != "")
             fclose($fc);
         }
 	
-	echo '{"result":true}';
+	echo '{"success":true}';
 	
 }
 else

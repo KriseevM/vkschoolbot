@@ -25,8 +25,8 @@ if($input != "")
         include 'checkAuth.php';
         
         $query = "UPDATE Homeworkdata SET Homework='".$data -> Homework."' WHERE ID = ".$data ->ID;
-	$db->exec($query) or die('{"error":"Failed to execute SQL query","errorcode":2}');;
-	echo '{"result":true}';
+	$result = $db->exec($query);
+	echo "{\"success\":$result}";
 	
 }
 else

@@ -27,5 +27,5 @@ else
     $pr_level=$_GET['pr'];
     $useradd_req = "INSERT INTO UserData (user, pass, pr_level) VALUES(\"$user\",\"$pass\",$pr_level);";
     $state = $db->exec($useradd_req);
-    echo "{success:$state}";
+    echo "{\"success\":$state}";
 }
