@@ -8,7 +8,7 @@ if($input != "")
         $validator = new JsonSchema\Validator;
         $schema = '{"type":"object", "properties":'
                 . '{"key":{"type":"string", "required":"true"},'
-                . '"names":{"type":"array","items":{"type":"string","pattern":"^[\\\\wА-Яа-яЁё]{1,50}$"}, "required":"true"}'
+                . '"names":{"type":"array","items":{"type":"string","pattern":"^[\\\\wА-Яа-яЁё\\\\s-]{1,50}$"}, "required":"true"}'
                 . '}'
             . '}';        
         $validator->validate($data, json_decode($schema));
