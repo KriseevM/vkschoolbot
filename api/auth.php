@@ -39,34 +39,32 @@ function Salt() {
     return $random_string; 
 } 
 
-require_once 'APIInternalInfo.php';
-$link = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname) or die("{\"error\":\"Failed to connect to database.\",\"errorcode\":1}");
+$db = new SQLite3("../bot.db");
 $user = $_POST["user"];   
-$pass = $_POST["pass"];
+$pass = hash('sha256', $_POST["pass"]);
 $ip = $_SERVER['REMOTE_ADDR'];
 $time = time();
-$check_query = "select * from $dbusernamestable where user=\"$user\" and pass=PASSWORD(\"$pass\")";
-$res = mysqli_query($link, $check_query) or die('{"error":"Failed to execute SQL query","errorcode":2}');
-$state = (mysqli_num_rows($res) > 0);
-if($state)
+$check_query = "select * from UserData where user=\"$user\" and pass=\"$pass\"";
+$res = $db->query($check_query);
+if($res->fetchArray(SQLITE3_ASSOC) != false)
 {
     $new_time = $time+1800;
-    $check_exists_query = "Select passkey from $dbkeystable where user=\"$user\" and ip=\"$ip\" and expiration_time > $time";
-    $check_exists_res = mysqli_query($link, $check_exists_query) or die('{"error":"Failed to execute SQL query","errorcode":2}');
-    if(mysqli_num_rows($check_exists_res) > 0)
+    $check_exists_query = "Select passkey from PassKeys where user=\"$user\" and ip=\"$ip\" and expiration_time > $time";
+    $check_exists_res = $db->query($check_exists_query)->fetchArray(SQLITE3_ASSOC);
+    if($check_exists_res != false)
     {
-        $key = mysqli_fetch_row($check_exists_res)[0];
+        $key = $check_exists_res["passkey"];
         echo "{\"key\":\"$key\"}";
-        $reset_time_query = "Update $dbkeystable Set expiration_time=$new_time where passkey=\"$key\"";
-        mysqli_query($link, $reset_time_query) or die('{"error":"Failed to execute SQL query","errorcode":2}');
+        $reset_time_query = "Update PassKeys Set expiration_time=$new_time where passkey=\"$key\"";
+        $db->exec($reset_time_query);
         exit();
     }
-    $remove_old_keys_query = "DELETE FROM $dbkeystable WHERE user=\"$user\" and ip=\"$ip\"";
-    mysqli_query($link, $remove_old_keys_query);
+    $remove_old_keys_query = "DELETE FROM PassKeys WHERE user=\"$user\" and ip=\"$ip\"";
+    $db->exec($remove_old_keys_query);
     $pre_key = Salt().$time.Salt().$ip.Salt().$user.Salt();
     $key = hash('sha256', $pre_key);    
-    $add_key_query = "Insert into $dbkeystable (passkey,user,ip,expiration_time) values(\"$key\",\"$user\",\"$ip\",$new_time)";
-    mysqli_query($link, $add_key_query) or die('{"error":"Failed to execute SQL query","errorcode":2}');
+    $add_key_query = "Insert into PassKeys (passkey,user,ip,expiration_time) values(\"$key\",\"$user\",\"$ip\",$new_time)";
+    $db->exec($add_key_query) or die('{"error":"Failed to execute SQL query","errorcode":2}');
     echo "{\"key\":\"$key\"}";
 }
 else 

@@ -5,15 +5,16 @@ if(!isset($_GET['key']))
 }
 $key = $_GET['key'];
 include 'checkAuth.php';
-require_once "../dbconnectinfo.php";
 if(!isset($_GET['id']))
 {
     die('{"error":"Missing required id parameter","errorcode":7}');
 }
-$input = $_GET['id'];
-$link = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname) or die("{\"error\":\"Failed to connect to database.\",\"errorcode\":1}");
-$fullres = mysqli_query($link, "SELECT * FROM Homeworkdata WHERE ID=".$input) or die('{"error":"Failed to execute SQL query","errorcode":2}');
-$res = mysqli_fetch_row($fullres);
+if(!is_numeric($_GET['id']))
+{
+    die('{"error":"Parameters are invalid","errorcode":7}');
+}
+$input = $_GET['id'];   
+$res = $db->query("SELECT * FROM Homeworkdata WHERE ID=".$input)->fetchArray(SQLITE3_NUM) or die('{"error":"Failed to execute SQL query","errorcode":2}');
 $data = array('ID' => intval($res[0]), 'Homework' => $res[2]);
 echo json_encode($data, JSON_UNESCAPED_UNICODE);
 ?>

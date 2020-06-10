@@ -4,6 +4,25 @@ require_once 'vendor/autoload.php';
 require 'APIInfo.php';
 $days = [1 => "понедельник", 2 => "вторник", 3 => "среду", 4 => "четверг", 5 => "пятницу", 6 => "субботу"];
 $vk = new \VK\Client\VKApiClient();
+
+function GetHomeworkMessage(string $empty_hw_msg, string $hw_header, int $day)
+{
+    $homework = getHomework($day);
+    $message = "";
+    while($row = $homework->fetchArray(SQLITE3_ASSOC))
+    {
+        $message .= "∙ ".$row["Subject"].": ".$row["Homework"]."\n";
+    }
+    if($message == "")
+    {
+        $message = $empty_hw_msg;
+    }
+    else {
+        $message = $hw_header."\n".$message;
+    }
+    return $message;
+}
+
 function sendMessage($text, $peer)
 {
     global $vk, $token;
@@ -15,23 +34,21 @@ function sendMessage($text, $peer)
 }
 function getAllHomework()
 {
-    require 'dbconnectinfo.php';
-     $link = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
+     $db = new SQLite3("bot.db");
  
      $sql = "SELECT Subject, Homework FROM Homeworkdata where Homework != \"\"";
-     $res = mysqli_query($link, $sql);
+     $res = $db->query($sql);
      return $res;
 }
 
 function getHomework($day) {
-    require 'dbconnectinfo.php';
-     $link = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
+     $db = new SQLite3("bot.db");
      $schedule = getSchedule($day);
      $changes = getChanges();
      $finalSchedule = applyChanges($schedule, $changes);
  
      $sql = "SELECT Subject, Homework FROM Homeworkdata where ID in (".implode(",", $finalSchedule).") AND Homework != \"\"";
-     $res = mysqli_query($link, $sql);
+     $res = $db->query($sql);
      return $res;
 }
 function getSchedule($day) {
@@ -77,9 +94,7 @@ function sendKeyboard($peer_id, $msg)
     ));
     
 }
-
 $data = json_decode(file_get_contents("php://input"));
-
 switch($data->type)
 {
     case 'confirmation':
@@ -101,7 +116,7 @@ switch($data->type)
                 {
                 if($data->object->message->action->type == "chat_invite_user")
                 {
-                    sendKeyboard($peer, "Всем привет\nТеперь в этой беседе можно пользоваться клавишами бота :)");
+                    sendKeyboard($peer, "Welcome :)");
                     
                 }
                 }
@@ -122,51 +137,20 @@ switch($data->type)
             case "задание":
                 $now = date("N", $data->object->message->date);
                  if($now == 7 || $now == 6) {
-                    $homework = getHomework(1);
-                     if(mysqli_num_rows($homework) == 0) {
-                        $message = "На понедельник ничего не задали";
-                     } else {
-                        $message = "Домашнее задание на понедельник:";
-                         while($row = mysqli_fetch_row($homework)) {
-                            $message.= "\n• ".$row[0].": ".$row[1];
-                         }
-                     }
+                    $message = GetHomeworkMessage("На понедельник ничего не задали", "Домашнее задание на понедельник:", 1);
                  } else {
-                    $homework = getHomework($now + 1);
-                     if(mysqli_num_rows($homework) == 0) {
-                        $message = "На завтра ничего не задали";
-                     } else {
-                        $message = "Домашнее задание на завтра:";
-                         while($row = mysqli_fetch_row($homework)) {
-                            $message.= "\n• ".$row[0].": ".$row[1];
-                         }
-                     }
+                    $message = GetHomeworkMessage("На завтра ничего не задали", "Домашнее задание на завтра:", $now+1);
+                    
                  }
                 sendMessage($message, $peer);
                  break;
                  case 'дз на сегодня':
                 $now = date("N", $data->object->message->date);
                 if($now == 7) {
-                    $homework = getHomework(1);
-                     if(mysqli_num_rows($homework) == 0) {
-                        $message = "На понедельник ничего не задали";
-                     } else {
-                        $message = "Домашнее задание на понедельник:";
-                         while($row = mysqli_fetch_row($homework)) {
-                            $message.= "\n• ".$row[0].": ".$row[1];
-                         }
-                     }
-                 } else {
-                    $homework = getHomework($now);
-                     if(mysqli_num_rows($homework) == 0) {
-                        $message = "На сегодня ничего не задали";
-                     } else {
-                        $message = "Домашнее задание на сегодня:";
-                         while($row = mysqli_fetch_row($homework)) {
-                            $message.= "\n• ".$row[0].": ".$row[1];
-                         }
-                     }
-                 }
+                    $message = GetHomeworkMessage("Какие уроки?! Сегодня воскресенье!\nНо на завтра ничего не задали :)", "Сегодня уроков нет. \nДомашнее задание на завтра:", 1);
+                } else {
+                    $message = GetHomeworkMessage("На сегодня ничего не задали", "Домашнее задание на сегодня:", $now);      
+                }
                 sendMessage($message, $peer);
                  break;
                  case "замены":
@@ -197,14 +181,20 @@ switch($data->type)
                          break;
                      case "все дз":
                      $homework = getAllHomework();
-                     if(mysqli_num_rows($homework) == 0) {
-                        $message = "Задание отсутствует";
-                     } else {
-                        $message = "Домашнее задание по всем предметам:";
-                         while($row = mysqli_fetch_row($homework)) {
-                            $message.= "\n• ".$row[0].": ".$row[1];
-                         }
+                     $message = "";
+                     while($row = $homework->fetchArray(SQLITE3_ASSOC))
+                     {
+                         $message .= $row["Subject"].": ".$row["Homework"]."\n";
                      }
+                     if($message == "")
+                     {
+                         $message = "Задание отсутствует";
+                     }
+                     else
+                     {
+                         $message = "Всё домашнее задание:\n".$message;
+                     }
+                     
                      sendMessage($message, $peer);
                      break;
                      case 'всё расписание':
