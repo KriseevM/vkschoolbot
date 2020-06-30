@@ -2,10 +2,18 @@
 ini_set('display_errors', 'Off');
 require_once 'vendor/autoload.php';
 require 'APIInfo.php';
-$days = [1 => "понедельник", 2 => "вторник", 3 => "среду", 4 => "четверг", 5 => "пятницу", 6 => "субботу"];
+$days = [
+    1 => "понедельник", 
+    2 => "вторник", 
+    3 => "среду", 
+    4 => "четверг",
+    5 => "пятницу", 
+    6 => "субботу"
+];
 $vk = new \VK\Client\VKApiClient();
 
-function GetHomeworkMessage(string $empty_hw_msg, string $hw_header, int $day)
+function GetHomeworkMessage
+(string $empty_homework_message, string $homework_header, int $day)
 {
     $homework = getHomework($day);
     $message = "";
@@ -15,10 +23,10 @@ function GetHomeworkMessage(string $empty_hw_msg, string $hw_header, int $day)
     }
     if($message == "")
     {
-        $message = $empty_hw_msg;
+        $message = $empty_homework_message;
     }
     else {
-        $message = $hw_header."\n".$message;
+        $message = $homework_header."\n".$message;
     }
     return $message;
 }
@@ -36,8 +44,8 @@ function getAllHomework()
 {
      $db = new SQLite3("bot.db");
  
-     $sql = "SELECT Subject, Homework FROM Homeworkdata where Homework != \"\"";
-     $res = $db->query($sql);
+     $query = "SELECT Subject, Homework FROM Homeworkdata where Homework != \"\"";
+     $res = $db->query($query);
      return $res;
 }
 
@@ -45,10 +53,11 @@ function getHomework($day) {
      $db = new SQLite3("bot.db");
      $schedule = getSchedule($day);
      $changes = getChanges();
-     $finalSchedule = applyChanges($schedule, $changes);
+     $final_schedule = applyChanges($schedule, $changes);
  
-     $sql = "SELECT Subject, Homework FROM Homeworkdata where ID in (".implode(",", $finalSchedule).") AND Homework != \"\"";
-     $res = $db->query($sql);
+     $query = "SELECT Subject, Homework FROM Homeworkdata where ID in ("
+             .implode(",", $final_schedule).") AND Homework != \"\"";
+     $res = $db->query($query);
      return $res;
 }
 function getSchedule($day) {
@@ -64,8 +73,8 @@ function getChanges() {
     $changes = explode("\n", file_get_contents("NumericChanges"));
      return $changes;
 }
-function applyChanges ($sched, $changes) {
-    $newSchedule = $sched;
+function applyChanges ($schedule, $changes) {
+    $new_schedule = $schedule;
      for($i = 0;
      $i < 8;
      $i++) {
@@ -73,24 +82,31 @@ function applyChanges ($sched, $changes) {
             if($changes[$i] == -2) {
                 continue;
              } else {
-                $newSchedule[$i] = $changes[$i];
+                $new_schedule[$i] = $changes[$i];
              }
          }
      }
-     $newSchedule = array_diff($newSchedule, ['-1', '']);
-     return $newSchedule;
+     $new_schedule = array_diff($new_schedule, ['-1', '']);
+     return $new_schedule;
  
 }
 
-function sendKeyboard($peer_id, $msg)
+function sendKeyboard($peer_id, $message)
 {
     
     global $vk, $token;
     $res = $vk->messages()->send($token, array(
         'peer_id' => $peer_id,
         'random_id' => 1,
-        'message' => $msg,
-        'keyboard'=> '{"one_time":false,"buttons":[[{"action":{"type":"text","label":"дз"},"color":"primary"},{"action":{"type":"text","label":"дз на сегодня"},"color":"primary"}],[{"action":{"type":"text","label":"все дз"},"color":"primary"},{"action":{"type":"text","label":"все расписание"},"color":"primary"}],[{"action":{"type":"text","label":"расписание на сегодня"},"color":"primary"}],[{"action":{"type":"text","label":"расписание на завтра"},"color":"primary"},{"action":{"type":"text","label":"замены"},"color":"primary"}]]}'
+        'message' => $message,
+        'keyboard'=> '{"one_time":false,"buttons":'
+        . '[[{"action":{"type":"text","label":"дз"},"color":"primary"},'
+        . '{"action":{"type":"text","label":"дз на сегодня"},"color":"primary"}],'
+        . '[{"action":{"type":"text","label":"все дз"},"color":"primary"},'
+        . '{"action":{"type":"text","label":"все расписание"},"color":"primary"}],'
+        . '[{"action":{"type":"text","label":"расписание на сегодня"},"color":"primary"}],'
+        . '[{"action":{"type":"text","label":"расписание на завтра"},"color":"primary"},'
+        . '{"action":{"type":"text","label":"замены"},"color":"primary"}]]}'
     ));
     
 }

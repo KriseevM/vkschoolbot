@@ -20,21 +20,30 @@ if($input != "")
             }
         }
         $key = $data->key;
-        
+        $result = true;
         include 'checkAuth.php';
         for($i = 1; $i <= 6; $i++)
         {
-            $fp = fopen('../days/'.$i, 'wb');
-            if(!$fp) {die('{"error":"Could not open required file", "errorcode":8}');}
-            fwrite($fp, $data->TextSchedule[$i-1]);
-            fclose($fp);
-            $fc = fopen('../NumericDays/'.$i, 'wb');
-            if(!$fc) {die('{"error":"Could not open required file", "errorcode":8}');}
-            fwrite($fc, implode("\n", $data->NumericSchedule[$i-1]));
-            fclose($fc);
+            $text_schedule_file = fopen('../days/'.$i, 'wb');
+            if(!$text_schedule_file) 
+            {
+                die('{"error":"Could not open required file", "errorcode":8}');
+            }
+            fwrite($text_schedule_file, $data->TextSchedule[$i - 1]);
+            fclose($text_schedule_file);
+            $numeric_schedule_file = fopen('../NumericDays/'.$i, 'wb');
+            if(!$numeric_schedule_file) 
+            {
+                die('{"error":"Could not open required file", "errorcode":8}');
+            }
+            fwrite($numeric_schedule_file, implode("\n", $data->NumericSchedule[$i - 1]));
+            fclose($numeric_schedule_file);
+            $result = $result 
+                    && file_get_contents('../NumericDays/'.$i) == implode("\n", $data->NumericSchedule[$i - 1])
+                    && file_get_contents('../days/'.$i) == $data->TextSchedule[$i - 1];
         }
 	
-	echo '{"success":true}';
+	echo json_encode(array('success' => $result), JSON_UNESCAPED_UNICODE);
 	
 }
 else

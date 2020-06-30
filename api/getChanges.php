@@ -1,11 +1,23 @@
 <?php
-require_once "ChangesData.php";
 if(!isset($_GET['key'])) 
 {
     die('{"error":"Key is required for authorisation","errorcode":6}');
 }
 $key = $_GET['key'];
 include 'checkAuth.php';
-$data = new ChangesData();
+
+$data = array(
+    'TextChanges' => file_get_contents("../changes"),
+    'NumericChanges' => array()
+);
+$numbers = explode("\n", file_get_contents("../NumericChanges"));
+for($i = 0; $i < 8; $i++)
+{
+    $el = $numbers[$i];
+    if(is_numeric($el))
+    {
+        $data['NumericChanges'][$i] = intval($el);
+    }    
+}
 echo json_encode($data, JSON_UNESCAPED_UNICODE);
 ?>

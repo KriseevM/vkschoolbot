@@ -25,7 +25,7 @@ else
     $user = $_GET['user'];
     $pass = hash("sha256", $_GET['pass']);
     $pr_level=$_GET['pr'];
-    $useradd_req = "INSERT INTO UserData (user, pass, pr_level) VALUES(\"$user\",\"$pass\",$pr_level);";
-    $state = $db->exec($useradd_req);
-    echo "{\"success\":$state}";
+    $query = "INSERT INTO UserData (user, pass, pr_level) VALUES(\"$user\",\"$pass\",$pr_level);";
+    $result = $db->exec($query);
+    echo json_encode(array('success' => $result), JSON_UNESCAPED_UNICODE);
 }
