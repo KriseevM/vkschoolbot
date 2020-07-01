@@ -1,5 +1,5 @@
 <?php
-ini_set('display_errors','Off');
+ini_set('display_errors','On');
 $ip = $_SERVER['REMOTE_ADDR'];
 if(!isset($key) || !isset($ip))
 {
@@ -9,7 +9,7 @@ if(!(preg_match("/^[a-f\d]{64}$/", $key) === 1))
 {
     die('{"error":"Key has incorrect format":6}');
 }
-$query = "Select expiration_time, user from PassKeys where passkey=\"$key\" and ip=\"$ip\"";
+$query = "SELECT expiration_time, user FROM PassKeys WHERE passkey=\"$key\" AND ip=\"$ip\"";
 $time = time();
 $db = new SQLite3("../bot.db");
 $res = $db->query($query)->fetchArray(SQLITE3_NUM);
@@ -22,15 +22,15 @@ else
     $exp_time = $res[0];
     if($time > $exp_time)
     {
-        $remove_query = "Delete from PassKeys where passkey=\"$key\"";
+        $remove_query = "DELETE FROM PassKeys WHERE passkey=\"$key\"";
         $db->exec($remove_query) or die('{"error":"Failed to execute SQL query","errorcode":2}');
         die("{\"error\":\"Key is expired\",\"errorcode\":5}");
     }
     else
     {
-        $reset_time_query = "Update PassKeys Set expiration_time=".($time+1800)." where passkey=\"$key\"";
+        $reset_time_query = "UPDATE PassKeys SET expiration_time=".($time+1800)." WHERE passkey=\"$key\"";
         $db->exec($reset_time_query) or die('{"error":"Failed to execute SQL query","errorcode":2}');
         $auth_user=$res[1];
-        $auth_pr = $db->query("Select pr_level from UserData where user=\"$auth_user\";")->fetchArray(SQLITE3_NUM)[0];
+        $auth_pr = $db->query("SELECT pr_level FROM UserData WHERE user=\"$auth_user\";")->fetchArray(SQLITE3_NUM)[0];
     }
 }

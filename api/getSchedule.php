@@ -1,5 +1,5 @@
 <?php
-function getNumSchedule($day) {
+function getNumericSchedule($day) {
     if($day < 1 || $day > 6) {
          return false;
      } else {
@@ -36,12 +36,12 @@ $res = array(
         getTextSchedule(6)
     ),
     'NumericSchedule' => array(
-        getNumSchedule(1),
-        getNumSchedule(2),
-        getNumSchedule(3),
-        getNumSchedule(4),
-        getNumSchedule(5),
-        getNumSchedule(6)
+        getNumericSchedule(1),
+        getNumericSchedule(2),
+        getNumericSchedule(3),
+        getNumericSchedule(4),
+        getNumericSchedule(5),
+        getNumericSchedule(6)
     )
 );
 echo json_encode($res, JSON_UNESCAPED_UNICODE);

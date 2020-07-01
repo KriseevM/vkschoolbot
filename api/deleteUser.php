@@ -27,7 +27,7 @@ else
     {
         die("{\"error\":\"You can not remove the user you are logged in\",\"errorcode\":7}");
     }
-    $userdel_req = "DELETE FROM UserData WHERE user=\"$user\";";
-    $state = $db->exec($userdel_req);
+    $query = "DELETE FROM UserData WHERE user=\"$user\";";
+    $result = $db->exec($query);
     echo json_encode(array('success' => $result), JSON_UNESCAPED_UNICODE); 
 }

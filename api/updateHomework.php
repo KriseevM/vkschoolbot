@@ -26,7 +26,7 @@ if($input != "")
         
         $query = "UPDATE Homeworkdata SET Homework='".$data -> Homework."' WHERE ID = ".$data ->ID;
 	$result = $db->exec($query);
-	echo "{\"success\":$result}";
+	echo json_encode(array('success' => $result), JSON_UNESCAPED_UNICODE);
 	
 }
 else

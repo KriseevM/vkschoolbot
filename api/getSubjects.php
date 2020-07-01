@@ -5,7 +5,8 @@ if(!isset($_GET['key']))
 }
 $key = $_GET['key'];
 include 'checkAuth.php';
-$res = $db->query("SELECT ID, Subject FROM Homeworkdata");
+$query = "SELECT ID, Subject FROM Homeworkdata";
+$res = $db->query($query);
 
 
 $output = array();

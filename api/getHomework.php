@@ -13,8 +13,9 @@ if(!is_numeric($_GET['id']))
 {
     die('{"error":"Parameters are invalid","errorcode":7}');
 }
-$input = $_GET['id'];   
-$res = $db->query("SELECT * FROM Homeworkdata WHERE ID=".$input)->fetchArray(SQLITE3_NUM) or die('{"error":"Failed to execute SQL query","errorcode":2}');
+$input = $_GET['id'];
+$query = "SELECT * FROM Homeworkdata WHERE ID=".$input;
+$res = $db->query($query)->fetchArray(SQLITE3_NUM) or die('{"error":"Failed to execute SQL query","errorcode":2}');
 $data = array('ID' => intval($res[0]), 'Homework' => $res[2]);
 echo json_encode($data, JSON_UNESCAPED_UNICODE);
 ?>

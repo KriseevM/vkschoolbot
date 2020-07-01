@@ -23,16 +23,16 @@ if($input != "")
         $key = $data->key;
         
         include 'checkAuth.php';
-	$fp = fopen('../changes', 'wb');
-        if(!$fp) {die('{"error":"Could not open required file", "errorcode":8}');}
-	fwrite($fp, $data->TextChanges);
-	fclose($fp);
-	$fc = fopen('../NumericChanges', 'wb');
+	$text_schedule_file = fopen('../changes', 'wb');
+        if(!$text_schedule_file) {die('{"error":"Could not open required file", "errorcode":8}');}
+	fwrite($text_schedule_file, $data->TextChanges);
+	fclose($text_schedule_file);
+	$numeric_schedule_file = fopen('../NumericChanges', 'wb');
         
-        if(!$fc) {die('{"error":"Could not open required file", "errorcode":8}');}
-	fwrite($fc, implode("\n", $data->NumericChanges));
-	fclose($fc);
-	echo '{"success":true}';
+        if(!$numeric_schedule_file) {die('{"error":"Could not open required file", "errorcode":8}');}
+	fwrite($numeric_schedule_file, implode("\n", $data->NumericChanges));
+	fclose($numeric_schedule_file);
+	echo json_encode(array('success' => true), JSON_UNESCAPED_UNICODE);
 	
 }
 else
