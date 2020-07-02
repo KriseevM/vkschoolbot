@@ -7,7 +7,7 @@ if(!isset($key) || !isset($ip))
 }
 if(!(preg_match("/^[a-f\d]{64}$/", $key) === 1))
 {
-    die('{"error":"Key has incorrect format":6}');
+    die('{"error":"Key has incorrect format","errorcode":6}');
 }
 $query = "SELECT expiration_time, user FROM PassKeys WHERE passkey=\"$key\" AND ip=\"$ip\"";
 $time = time();
