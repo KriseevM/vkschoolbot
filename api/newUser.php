@@ -5,7 +5,10 @@ if(!isset($_GET['key']))
 }
 $key = $_GET['key'];
 include 'checkAuth.php';
-
+// Переменная $db приходит из файла checkAuth.php. 
+// Но в этом файле происходит запись в базу, что влияет на вывод метода changes()
+$db->close();
+$db->open("../bot.db");
 if($auth_pr !== 2)
 {
     die("{\"error\":\"You are not allowed to use this method\",\"errorcode\":9}");
@@ -25,7 +28,12 @@ else
     $user = $_GET['user'];
     $pass = hash("sha256", $_GET['pass']);
     $pr_level=$_GET['pr'];
-    $query = "INSERT INTO UserData (user, pass, pr_level) VALUES(\"$user\",\"$pass\",$pr_level);";
-    $result = $db->exec($query);
-    echo json_encode(array('success' => $result), JSON_UNESCAPED_UNICODE);
+    $query = "INSERT INTO UserData (user, pass, pr_level) VALUES(:user,:pass,:pr_level);";
+    $stmt = $db->prepare($query);
+    $stmt->bindValue(':user', $user);
+    $stmt->bindValue(':pass', $pass);
+    $stmt->bindValue(':pr_level', $pr_level);
+    $result = $stmt->execute();
+    $result = boolval($db->changes());
+    echo json_encode(array('created' => $result), JSON_UNESCAPED_UNICODE);
 }

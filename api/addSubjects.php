@@ -25,10 +25,21 @@ if($input != "")
         {
             die("{\"error\":\"You are not allowed to use this method\",\"errorcode\":9}");
         }
-        $query = "INSERT INTO Homeworkdata (Subject) VALUES (\""
-                .implode("\"),(\"",$data->names)."\");";
-        $result = $db->exec($query);
-        echo json_encode(array('success' => $result), JSON_UNESCAPED_UNICODE); 
+
+        // Переменная $db приходит из файла checkAuth.php. 
+        // Но в этом файле происходит запись в базу, что влияет на вывод метода changes()
+        $db->close();
+        $db->open("../bot.db");
+        $placeholders = rtrim(str_repeat('(?), ', count($data->names)), ', ');
+        $query = "INSERT INTO Homeworkdata (Subject) VALUES $placeholders";
+        $stmt = $db->prepare($query);
+        for($i = 1; $i <= count($data->names); $i++)
+        {
+            $stmt->bindValue($i, $data->names[$i-1]);
+        }
+        $stmt->execute();
+        $result = $db->changes();
+        echo json_encode(array('added_subjects' => $result), JSON_UNESCAPED_UNICODE); 
 	
 	
 }
