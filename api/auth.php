@@ -40,32 +40,57 @@ function Salt() {
 } 
 
 $db = new SQLite3("../bot.db");
-$user = $_POST["user"];   
+$user = $_POST["user"];
+if(!preg_match("/^[\w]+$/", $user))
+{
+    die("{\"error\":\"Incorrect login or password\",\"errorcode\":3}");
+}
+
 $pass = hash('sha256', $_POST["pass"]);
 $ip = $_SERVER['REMOTE_ADDR'];
 $time = time();
-$check_query = "SELECT * FROM UserData WHERE user=\"$user\" AND pass=\"$pass\"";
-$res = $db->query($check_query);
+$check_query = "SELECT * FROM UserData WHERE user=:user AND pass=:pass";
+$stmt = $db->prepare($check_query);
+$stmt->bindValue(':user', $user);
+$stmt->bindValue(':pass', $pass);
+$res = $stmt->execute();
+
 if($res->fetchArray(SQLITE3_ASSOC) != false)
 {
     $new_time = $time+1800;
-    $check_exists_query = "SELECT passkey FROM PassKeys WHERE user=\"$user\" AND ip=\"$ip\" AND expiration_time > $time";
-    $check_exists_res = $db->query($check_exists_query)->fetchArray(SQLITE3_ASSOC);
+    $check_exists_query = "SELECT passkey FROM PassKeys WHERE user=:user AND ip=:ip AND expiration_time > :time";
+    $check_exists_stmt = $db->prepare($check_exists_query);
+    $check_exists_stmt->bindValue(':user',$user);
+    $check_exists_stmt->bindValue(':ip',$ip);
+    $check_exists_stmt->bindValue(':time',$time);
+    $check_exists_res = $check_exists_stmt->execute()
+        ->fetchArray(SQLITE3_ASSOC);
     if($check_exists_res != false)
     {
         $key = $check_exists_res["passkey"];
         echo "{\"key\":\"$key\"}";
-        $reset_time_query = "UPDATE PassKeys SET expiration_time=$new_time WHERE passkey=\"$key\"";
-        $db->exec($reset_time_query);
+        $reset_time_query = "UPDATE PassKeys SET expiration_time=:new_time WHERE passkey=:key";
+        $reset_time_stmt = $db->prepare($reset_time_query);
+        $reset_time_stmt->bindValue(':key', $key);
+        $reset_time_stmt->bindValue(':new_time', $new_time);
+        $reset_time_stmt->execute();
         exit();
     }
-    $remove_old_keys_query = "DELETE FROM PassKeys WHERE user=\"$user\" AND ip=\"$ip\"";
-    $db->exec($remove_old_keys_query);
+    $remove_old_keys_query = "DELETE FROM PassKeys WHERE user=:user AND ip=:ip";
+    $remove_old_keys_stmt = $db->prepare($remove_old_keys_query);
+    $remove_old_keys_stmt->bindValue(':user', $user);
+    $remove_old_keys_stmt->bindValue(':ip', $ip);
+    $remove_old_keys_stmt->execute();
     $pre_key = Salt().$time.Salt().$ip.Salt().$user.Salt();
     $key = hash('sha256', $pre_key);    
     $add_key_query = "INSERT INTO PassKeys (passkey,user,ip,expiration_time) "
-            . "VALUES (\"$key\",\"$user\",\"$ip\",$new_time)";
-    $db->exec($add_key_query) or die('{"error":"Failed to execute SQL query","errorcode":2}');
+            . "VALUES (:key,:user,:ip,:new_time)";
+    $add_key_stmt = $db->prepare($add_key_query);
+    $add_key_stmt->bindValue(':key', $key);
+    $add_key_stmt->bindValue(':user', $user);
+    $add_key_stmt->bindValue(':ip', $ip);
+    $add_key_stmt->bindValue(':new_time', $new_time);
+    $add_key_stmt->execute();
     echo "{\"key\":\"$key\"}";
 }
 else 
