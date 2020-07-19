@@ -27,10 +27,10 @@ ini_set('display_errors', 'Off');
 // При повторном обращении для авторизации того же пользователя (если срок 
 // действия ключа ещё не закончился) будет продлёт и возвращён имеющийся ключ
 
-function Salt() { 
+function random_string() { 
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-()#@!$%^&*=+.'; 
     $random_string = ''; 
-    $n = rand(7, 15);
+    $n = rand(5, 10);
     for ($i = 0; $i < $n; $i++) { 
         $index = rand(0, strlen($characters) - 1); 
         $random_string .= $characters[$index]; 
@@ -81,7 +81,7 @@ if($res->fetchArray(SQLITE3_ASSOC) != false)
     $remove_old_keys_stmt->bindValue(':user', $user);
     $remove_old_keys_stmt->bindValue(':ip', $ip);
     $remove_old_keys_stmt->execute();
-    $pre_key = Salt().$time.Salt().$ip.Salt().$user.Salt();
+    $pre_key = random_string().$time.random_string().$ip.random_string().$user.random_string();
     $key = hash('sha256', $pre_key);    
     $add_key_query = "INSERT INTO PassKeys (passkey,user,ip,expiration_time) "
             . "VALUES (:key,:user,:ip,:new_time)";
