@@ -1,29 +1,35 @@
 <?php
 require_once '../vendor/autoload.php';
+include 'checkAuth.php';
+if($auth_pr !== 2)
+{
+    die("{\"error\":\"You are not allowed to use this method\",\"errorcode\":9}");
+}
 $input = file_get_contents('php://input');
 if($input != "")
 {
-        //Checks and auth
 	$data = json_decode($input);
         $validator = new JsonSchema\Validator;
-        $schema = '{"type":"object", "properties":'
-                . '{"key":{"type":"string", "required":"true"},'
-                . '"names":{"type":"array","items":{"type":"string","pattern":"^[\\\\wА-Яа-яЁё\\\\s-]{1,50}$"}, "required":"true"}'
-                . '}'
-            . '}';        
-        $validator->validate($data, json_decode($schema));
+        $schema = (object)[
+            'type' => 'object',
+            'properties' => (object)[
+                'names' => (object) [
+                    'type' => 'array',
+                    'items' => (object) [
+                        'type' => 'string',
+                        'pattern' => '^[\\wА-Яа-яЁё\\s-]{1,50}$'
+                    ],
+                    'required' => true
+                ]
+            ]
+        ];     
+        $validator->validate($data, $schema);
         if(!$validator->isValid())
         {
             foreach($validator->getErrors() as $error)
             {
                 die('{"error":"'.$error['message'].'":7}');
             }
-        }
-        $key = $data->key;
-        include 'checkAuth.php';
-        if($auth_pr !== 2)
-        {
-            die("{\"error\":\"You are not allowed to use this method\",\"errorcode\":9}");
         }
 
         // Переменная $db приходит из файла checkAuth.php. 
