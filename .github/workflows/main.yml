@@ -20,6 +20,8 @@ jobs:
       run: composer install
     - name: Copy files to www dir
       run: cp -r $(pwd) /var/www/html/vkschoolbot
+    - name: Chown all files to www-data
+      run: chown -R www-data /var/www/html/vkschoolbot
     - name: Start Apache Server
       run: service apache2 start
     - name: Run tests
