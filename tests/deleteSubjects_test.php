@@ -23,20 +23,22 @@ if(!copy("bot.db", "bot.db.bak"))
 $time = time()+10;
 $db = new SQLite3('bot.db');
 $test_key = "daabd3a8ab2db21b84593afecbf3f6dc739e357e1da7a9e5d3b005d9e004766c";
-$db->exec("INSERT INTO PassKeys (passkey, user, ip, expiration_time) VALUES (\"$time\", \"DEFAULT\", \"127.0.0.1\", $time)");
+$db->exec("INSERT INTO PassKeys (passkey, user, ip, expiration_time) VALUES (\"$test_key\", \"DEFAULT\", \"127.0.0.1\", $time)");
 $db->exec("INSERT INTO Homeworkdata (Subject) VALUES (\"Предмет 1\"), (\"Предмет 2\")");
 $ch = curl_init('localhost/vkschoolbot/api/deleteSubjects.php');
 $params = json_encode(array('IDs' => [1, 2]));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ["key: $test_key"]);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 $result = curl_exec($ch);
 if($result === json_encode(array('deleted_subjects' => 2)))
 {
-    log_error("Test failed!\n");
-    restore_db();
-}
-else {
     restore_db();
     echo "OK\n";
+}
+else {
+    log_error("Test failed!\n");
+    restore_db();
 }

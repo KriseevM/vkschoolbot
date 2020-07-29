@@ -29,6 +29,7 @@ $auth_ch = curl_init('localhost/vkschoolbot/api/auth.php');
 curl_setopt($auth_ch, CURLOPT_POST, true);
 curl_setopt($auth_ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($auth_ch, CURLOPT_POSTFIELDS, $auth_data);
+curl_setopt($auth_ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 $data = json_decode(curl_exec($auth_ch));
 if($data == null)
 {
