@@ -1,18 +1,13 @@
 <?php
-if(!isset($_GET['key'])) 
-{
-    die('{"error":"Key is required for authorisation","errorcode":6}');
-}
-$key = $_GET['key'];
 include 'checkAuth.php';
-// Переменная $db приходит из файла checkAuth.php. 
-// Но в этом файле происходит запись в базу, что влияет на вывод метода changes()
-$db->close();
-$db->open("../bot.db");
 if($auth_pr !== 2)
 {
     die("{\"error\":\"You are not allowed to use this method\",\"errorcode\":9}");
 }
+// Переменная $db приходит из файла checkAuth.php. 
+// Но в этом файле происходит запись в базу, что влияет на вывод метода changes()
+$db->close();
+$db->open("../bot.db");
 
 if(!isset($_GET['user']))
 {

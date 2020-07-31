@@ -7,13 +7,20 @@ if($input != "")
         //Checks and auth
 	$data = json_decode($input);
     $validator = new JsonSchema\Validator;
-    $schema = '{"type":"object", "properties":'
-            . '{"key":{"type":"string", "required":"true"},'
-            . '"ID":{"type":"integer", "required":"true"},'
-            . '"Homework":{"type":"string", "required":"true"}'
-            . '}'
-        . '}';        
-    $validator->validate($data, json_decode($schema));
+    $schema = (object)[
+        'type' => 'object',
+        'properties' => (object) [
+            'ID' => (object)[
+                'type' => 'integer',
+                'required' => true
+            ],
+            'Homework' => (object)[
+                'type' => 'string',
+                'required' => true
+            ]
+        ]
+    ];        
+    $validator->validate($data, $schema);
     if(!$validator->isValid())
     {
         $errortext = "Failed to validate parameters: ";
@@ -24,7 +31,6 @@ if($input != "")
         $errortext = rtrim($errortext, ", ");
         die(json_encode(['error' => $errortext, 'errorcode' => 7]));
     }
-    $key = $data->key;
     include 'checkAuth.php';
     $homework = $data->Homework;
     $ID = $data->ID;

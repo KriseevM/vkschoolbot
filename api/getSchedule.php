@@ -1,4 +1,6 @@
 <?php
+include 'checkAuth.php';
+
 function getNumericSchedule($day) {
     if($day < 1 || $day > 6) {
          return false;
@@ -20,12 +22,6 @@ function getTextSchedule($day) {
      }
 }
 
-if(!isset($_GET['key'])) 
-{
-    die('{"error":"Key is required for authorisation","errorcode":6}');
-}
-$key = $_GET['key'];
-include 'checkAuth.php';
 $res = array(
     'TextSchedule' => array(
         getTextSchedule(1),

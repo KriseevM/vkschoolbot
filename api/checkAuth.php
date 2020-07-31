@@ -1,6 +1,7 @@
 <?php
 ini_set('display_errors','Off');
 $ip = $_SERVER['REMOTE_ADDR'];
+$key = $_SERVER['HTTP_KEY'];
 if(!isset($key) || !isset($ip))
 {
     die('{"error":"Missing required parameters for authorisation","errorcode":6}');

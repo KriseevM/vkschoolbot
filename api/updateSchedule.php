@@ -1,17 +1,39 @@
 <?php
 require_once '../vendor/autoload.php';
+include 'checkAuth.php';
 $input = file_get_contents('php://input');
 if($input != "")
 {
     $data = json_decode($input);        
     $validator = new JsonSchema\Validator;
-    $schema = '{"type":"object", "properties":'
-            . '{"key":{"type":"string", "required":"true"},'
-            . '"TextSchedule":{"type":"array", "items":{"type":"string"}, "required":"true"},'
-            . '"NumericSchedule":{"type":"array","items":{"type":"array", "items":{"type":"integer"}}, "required":"true"}'
-            . '}'
-        . '}';
-    $validator->validate($data, json_decode($schema));
+    $schema = (object)[
+        'type' => 'object',
+        'properties' => (object)[
+            'TextSchedule' => (object)[
+                'type' => 'array',
+                'items' => (object)[
+                    'type' => 'string'
+                ],
+                'minItems' => 6,
+                'maxItems' => 6,
+                'required' => true
+            ],
+            'NumericSchedule' => (object)[
+                'type' => 'array',
+                'items' => (object)[
+                    'type' => 'array',
+                    'items' => (object)[
+                        'type' => 'integer'
+                    ],
+                    'maxItems' => 8
+                ],
+                'minItems' => 6,
+                'maxItems' => 6,
+                'required' => true
+            ]
+        ]
+    ];
+    $validator->validate($data, $schema);
     if(!$validator->isValid())
     {
         $errortext = "Failed to validate parameters: ";
@@ -22,9 +44,9 @@ if($input != "")
         $errortext = rtrim($errortext, ", ");
         die(json_encode(['error' => $errortext, 'errorcode' => 7]));
     }
-    $key = $data->key;
+    
     $result = true;
-    include 'checkAuth.php';
+    
     for ($i = 1; $i <= 6; $i++) {
         $text_schedule_file = fopen('../days/' . $i, 'wb');
         if (!$text_schedule_file) {
@@ -42,9 +64,7 @@ if($input != "")
             && file_get_contents('../NumericDays/' . $i) == implode("\n", $data->NumericSchedule[$i - 1])
             && file_get_contents('../days/' . $i) == $data->TextSchedule[$i - 1];
     }
-	
-	echo json_encode(array('success' => $result), JSON_UNESCAPED_UNICODE);
-	
+	  echo json_encode(array('success' => $result), JSON_UNESCAPED_UNICODE);
 }
 else
 {

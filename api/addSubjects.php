@@ -1,10 +1,14 @@
 <?php
 require_once '../vendor/autoload.php';
+include 'checkAuth.php';
+if ($auth_pr !== 2) 
+{
+    die("{\"error\":\"You are not allowed to use this method\",\"errorcode\":9}");
+}
 $input = file_get_contents('php://input');
 if($input != "")
 {
-        //Checks and auth
-	$data = json_decode($input);
+    $data = json_decode($input);
     $validator = new JsonSchema\Validator;
     $schema = '{"type":"object", "properties":'
             . '{"key":{"type":"string", "required":"true"},'
@@ -23,12 +27,7 @@ if($input != "")
         die(json_encode(['error' => $errortext, 'errorcode' => 7]));
     }
     $key = $data->key;
-    include 'checkAuth.php';
-    if ($auth_pr !== 2) 
-    {
-        die("{\"error\":\"You are not allowed to use this method\",\"errorcode\":9}");
-    }
-
+    
     // Переменная $db приходит из файла checkAuth.php. 
     // Но в этом файле происходит запись в базу, что влияет на вывод метода changes()
     $db->close();
