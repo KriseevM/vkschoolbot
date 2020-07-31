@@ -27,10 +27,13 @@ if($input != "")
     $validator->validate($data, $schema);
     if(!$validator->isValid())
     {
+        $errortext = "Failed to validate parameters: ";
         foreach($validator->getErrors() as $error)
         {
-            die('{"error":"'.$error['message'].'":7}');
+            $errortext .= $error['message'].", ";
         }
+        $errortext = rtrim($errortext, ", ");
+        die(json_encode(['error' => $errortext, 'errorcode' => 7]));
     }
     
     // Переменная $db приходит из файла checkAuth.php. 

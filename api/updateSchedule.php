@@ -1,70 +1,70 @@
 <?php
 require_once '../vendor/autoload.php';
+include 'checkAuth.php';
 $input = file_get_contents('php://input');
 if($input != "")
 {
-        $data = json_decode($input);        
-        $validator = new JsonSchema\Validator;
-        $schema = (object)[
-            'type' => 'object',
-            'properties' => (object)[
-                'TextSchedule' => (object)[
-                    'type' => 'array',
-                    'items' => (object)[
-                        'type' => 'string'
-                    ],
-                    'minItems' => 6,
-                    'maxItems' => 6,
-                    'required' => true
+    $data = json_decode($input);        
+    $validator = new JsonSchema\Validator;
+    $schema = (object)[
+        'type' => 'object',
+        'properties' => (object)[
+            'TextSchedule' => (object)[
+                'type' => 'array',
+                'items' => (object)[
+                    'type' => 'string'
                 ],
-                'NumericSchedule' => (object)[
+                'minItems' => 6,
+                'maxItems' => 6,
+                'required' => true
+            ],
+            'NumericSchedule' => (object)[
+                'type' => 'array',
+                'items' => (object)[
                     'type' => 'array',
                     'items' => (object)[
-                        'type' => 'array',
-                        'items' => (object)[
-                            'type' => 'integer'
-                        ],
-                        'maxItems' => 8
+                        'type' => 'integer'
                     ],
-                    'minItems' => 6,
-                    'maxItems' => 6,
-                    'required' => true
-                ]
+                    'maxItems' => 8
+                ],
+                'minItems' => 6,
+                'maxItems' => 6,
+                'required' => true
             ]
-        ];
-        $validator->validate($data, $schema);
-        if(!$validator->isValid())
+        ]
+    ];
+    $validator->validate($data, $schema);
+    if(!$validator->isValid())
+    {
+        $errortext = "Failed to validate parameters: ";
+        foreach($validator->getErrors() as $error)
         {
-            foreach($validator->getErrors() as $error)
-            {
-                die('{"error":"'.$error['message'].'":7}');
-            }
+            $errortext .= $error['message'].", ";
         }
-        include 'checkAuth.php';
-        $result = true;
-        for($i = 1; $i <= 6; $i++)
-        {
-            $text_schedule_file = fopen('../days/'.$i, 'wb');
-            if(!$text_schedule_file) 
-            {
-                die('{"error":"Could not open required file", "errorcode":8}');
-            }
-            fwrite($text_schedule_file, $data->TextSchedule[$i - 1]);
-            fclose($text_schedule_file);
-            $numeric_schedule_file = fopen('../NumericDays/'.$i, 'wb');
-            if(!$numeric_schedule_file) 
-            {
-                die('{"error":"Could not open required file", "errorcode":8}');
-            }
-            fwrite($numeric_schedule_file, implode("\n", $data->NumericSchedule[$i - 1]));
-            fclose($numeric_schedule_file);
-            $result = $result 
-                    && file_get_contents('../NumericDays/'.$i) == implode("\n", $data->NumericSchedule[$i - 1])
-                    && file_get_contents('../days/'.$i) == $data->TextSchedule[$i - 1];
+        $errortext = rtrim($errortext, ", ");
+        die(json_encode(['error' => $errortext, 'errorcode' => 7]));
+    }
+    
+    $result = true;
+    
+    for ($i = 1; $i <= 6; $i++) {
+        $text_schedule_file = fopen('../days/' . $i, 'wb');
+        if (!$text_schedule_file) {
+            die('{"error":"Could not open required file", "errorcode":8}');
         }
-	
-	echo json_encode(array('success' => $result), JSON_UNESCAPED_UNICODE);
-	
+        fwrite($text_schedule_file, $data->TextSchedule[$i - 1]);
+        fclose($text_schedule_file);
+        $numeric_schedule_file = fopen('../NumericDays/' . $i, 'wb');
+        if (!$numeric_schedule_file) {
+            die('{"error":"Could not open required file", "errorcode":8}');
+        }
+        fwrite($numeric_schedule_file, implode("\n", $data->NumericSchedule[$i - 1]));
+        fclose($numeric_schedule_file);
+        $result = $result
+            && file_get_contents('../NumericDays/' . $i) == implode("\n", $data->NumericSchedule[$i - 1])
+            && file_get_contents('../days/' . $i) == $data->TextSchedule[$i - 1];
+    }
+	  echo json_encode(array('success' => $result), JSON_UNESCAPED_UNICODE);
 }
 else
 {
