@@ -1,11 +1,10 @@
 <?php
 require_once '../vendor/autoload.php';
 $input = file_get_contents('php://input');
-if($input != "")
-{
-    
-        //Checks and auth
-	$data = json_decode($input);
+if ($input != "") {
+
+    //Checks and auth
+    $data = json_decode($input);
     $validator = new JsonSchema\Validator;
     $schema = (object)[
         'type' => 'object',
@@ -19,14 +18,12 @@ if($input != "")
                 'required' => true
             ]
         ]
-    ];        
+    ];
     $validator->validate($data, $schema);
-    if(!$validator->isValid())
-    {
+    if (!$validator->isValid()) {
         $errortext = "Failed to validate parameters: ";
-        foreach($validator->getErrors() as $error)
-        {
-            $errortext .= $error['message'].", ";
+        foreach ($validator->getErrors() as $error) {
+            $errortext .= $error['message'] . ", ";
         }
         $errortext = rtrim($errortext, ", ");
         die(json_encode(['error' => $errortext, 'errorcode' => 7]));
@@ -40,11 +37,7 @@ if($input != "")
     $stmt->bindValue(':id', $ID);
     $stmt->execute();
     $result = boolval($db->changes());
-	echo json_encode(array('updated' => $result), JSON_UNESCAPED_UNICODE);
-	
-}
-else
-{
+    echo json_encode(array('updated' => $result), JSON_UNESCAPED_UNICODE);
+} else {
     die('{"error":"Empty request","errorcode":7}');
 }
-?>

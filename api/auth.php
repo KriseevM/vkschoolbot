@@ -27,22 +27,22 @@ ini_set('display_errors', 'Off');
 // При повторном обращении для авторизации того же пользователя (если срок 
 // действия ключа ещё не закончился) будет продлёт и возвращён имеющийся ключ
 
-function random_string() { 
-    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-()#@!$%^&*=+.'; 
-    $random_string = ''; 
+function random_string()
+{
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-()#@!$%^&*=+.';
+    $random_string = '';
     $n = rand(5, 10);
-    for ($i = 0; $i < $n; $i++) { 
-        $index = rand(0, strlen($characters) - 1); 
-        $random_string .= $characters[$index]; 
-    } 
-  
-    return $random_string; 
-} 
+    for ($i = 0; $i < $n; $i++) {
+        $index = rand(0, strlen($characters) - 1);
+        $random_string .= $characters[$index];
+    }
+
+    return $random_string;
+}
 
 $db = new SQLite3("../bot.db");
 $user = $_POST["user"];
-if(!preg_match("/^[\w]+$/", $user))
-{
+if (!preg_match("/^[\w]+$/", $user)) {
     die("{\"error\":\"Incorrect login or password\",\"errorcode\":3}");
 }
 
@@ -55,18 +55,16 @@ $stmt->bindValue(':user', $user);
 $stmt->bindValue(':pass', $pass);
 $res = $stmt->execute();
 
-if($res->fetchArray(SQLITE3_ASSOC) != false)
-{
-    $new_time = $time+1800;
+if ($res->fetchArray(SQLITE3_ASSOC) != false) {
+    $new_time = $time + 1800;
     $check_exists_query = "SELECT passkey FROM PassKeys WHERE user=:user AND ip=:ip AND expiration_time > :time";
     $check_exists_stmt = $db->prepare($check_exists_query);
-    $check_exists_stmt->bindValue(':user',$user);
-    $check_exists_stmt->bindValue(':ip',$ip);
-    $check_exists_stmt->bindValue(':time',$time);
+    $check_exists_stmt->bindValue(':user', $user);
+    $check_exists_stmt->bindValue(':ip', $ip);
+    $check_exists_stmt->bindValue(':time', $time);
     $check_exists_res = $check_exists_stmt->execute()
         ->fetchArray(SQLITE3_ASSOC);
-    if($check_exists_res != false)
-    {
+    if ($check_exists_res != false) {
         $key = $check_exists_res["passkey"];
         echo "{\"key\":\"$key\"}";
         $reset_time_query = "UPDATE PassKeys SET expiration_time=:new_time WHERE passkey=:key";
@@ -81,10 +79,10 @@ if($res->fetchArray(SQLITE3_ASSOC) != false)
     $remove_old_keys_stmt->bindValue(':user', $user);
     $remove_old_keys_stmt->bindValue(':ip', $ip);
     $remove_old_keys_stmt->execute();
-    $pre_key = random_string().$time.random_string().$ip.random_string().$user.random_string();
-    $key = hash('sha256', $pre_key);    
+    $pre_key = random_string() . $time . random_string() . $ip . random_string() . $user . random_string();
+    $key = hash('sha256', $pre_key);
     $add_key_query = "INSERT INTO PassKeys (passkey,user,ip,expiration_time) "
-            . "VALUES (:key,:user,:ip,:new_time)";
+        . "VALUES (:key,:user,:ip,:new_time)";
     $add_key_stmt = $db->prepare($add_key_query);
     $add_key_stmt->bindValue(':key', $key);
     $add_key_stmt->bindValue(':user', $user);
@@ -92,9 +90,6 @@ if($res->fetchArray(SQLITE3_ASSOC) != false)
     $add_key_stmt->bindValue(':new_time', $new_time);
     $add_key_stmt->execute();
     echo "{\"key\":\"$key\"}";
-}
-else 
-{
+} else {
     die("{\"error\":\"Incorrect login or password\",\"errorcode\":3}");
 }
-

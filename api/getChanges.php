@@ -6,13 +6,10 @@ $data = array(
     'NumericChanges' => array()
 );
 $numbers = explode("\n", file_get_contents("../NumericChanges"));
-for($i = 0; $i < 8; $i++)
-{
+for ($i = 0; $i < 8; $i++) {
     $el = $numbers[$i];
-    if(is_numeric($el))
-    {
+    if (is_numeric($el)) {
         $data['NumericChanges'][$i] = intval($el);
-    }    
+    }
 }
 echo json_encode($data, JSON_UNESCAPED_UNICODE);
-?>
