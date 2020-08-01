@@ -14,7 +14,8 @@ if ($input != "") {
             'names' => (object)[
                 'type' => 'array',
                 'items' => (object)[
-                    'type' => 'string'
+                    'type' => 'string',
+                    'pattern' => '^[\\wА-Яа-яЁё\\s-]{1,50}$'
                 ],
                 'required' => true
             ]
