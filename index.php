@@ -2,7 +2,7 @@
 ini_set('display_errors', 'Off');
 require_once 'vendor/autoload.php';
 require 'APIInfo.php';
-$days = [
+$text_timetable = [
     1 => "понедельник",
     2 => "вторник",
     3 => "среду",
@@ -48,23 +48,23 @@ function getAllHomework()
 function getHomework($day)
 {
     $db = new SQLite3("bot.db");
-    $schedule = getSchedule($day);
+    $timetable = getTimetable($day);
     $changes = getChanges();
-    $final_schedule = applyChanges($schedule, $changes);
+    $final_timetable = applyChanges($timetable, $changes);
 
     $query = "SELECT Subject, Homework FROM Homeworkdata where ID in ("
-        . implode(",", $final_schedule) . ") AND Homework != \"\"";
+        . implode(",", $final_timetable) . ") AND Homework != \"\"";
     $res = $db->query($query);
     return $res;
 }
-function getSchedule($day)
+function getTimetable($day)
 {
     if ($day < 1 || $day > 6) {
         echo false;
         return false;
     } else {
-        $schedule = explode("\n", file_get_contents("NumericDays/" . $day));
-        return $schedule;
+        $timetable = explode("\n", file_get_contents("NumTimetable/" . $day));
+        return $timetable;
     }
 }
 function getChanges()
@@ -72,9 +72,9 @@ function getChanges()
     $changes = explode("\n", file_get_contents("NumericChanges"));
     return $changes;
 }
-function applyChanges($schedule, $changes)
+function applyChanges($timetable, $changes)
 {
-    $new_schedule = $schedule;
+    $new_timetable = $timetable;
     for (
         $i = 0;
         $i < 8;
@@ -84,12 +84,12 @@ function applyChanges($schedule, $changes)
             if ($changes[$i] == -2) {
                 continue;
             } else {
-                $new_schedule[$i] = $changes[$i];
+                $new_timetable[$i] = $changes[$i];
             }
         }
     }
-    $new_schedule = array_diff($new_schedule, ['-1', '']);
-    return $new_schedule;
+    $new_timetable = array_diff($new_timetable, ['-1', '']);
+    return $new_timetable;
 }
 
 function sendKeyboard($peer_id, $message)
@@ -172,18 +172,18 @@ switch ($data->type) {
             case 'расписание':
                 $now = date("N", $data->object->message->date);
                 if ($now == 7 || $now == 6) {
-                    $message = "Расписание на понедельник:\n" . file_get_contents('days/1');
+                    $message = "Расписание на понедельник:\n" . file_get_contents('TextTimetable/1');
                 } else {
-                    $message = 'Расписание на ' . $days[$now + 1] . ":\n" . file_get_contents('days/' . ($now + 1));
+                    $message = 'Расписание на ' . $text_timetable[$now + 1] . ":\n" . file_get_contents('TextTimetable/' . ($now + 1));
                 }
                 sendMessage($message, $peer);
                 break;
             case 'расписание на сегодня':
                 $now = date("N", $data->object->message->date);
                 if ($now == 7) {
-                    $message = "Сегодняя уроков нет :)\nЛадно, расписание на понедельник:\n" . file_get_contents('days/1');
+                    $message = "Сегодняя уроков нет :)\nЛадно, расписание на понедельник:\n" . file_get_contents('TextTimetable/1');
                 } else {
-                    $message = 'Расписание на ' . $days[$now] . ":\n" . file_get_contents('days/' . ($now));
+                    $message = 'Расписание на ' . $text_timetable[$now] . ":\n" . file_get_contents('TextTimetable/' . ($now));
                 }
                 sendMessage($message, $peer);
                 break;
@@ -205,12 +205,12 @@ switch ($data->type) {
             case 'все расписание':
             case 'расписание на всю неделю':
                 $message = "Расписание";
-                $message .= "\nНа понедельник:\n" . file_get_contents('days/1');
-                $message .= "\nНа вторник:\n" . file_get_contents('days/2');
-                $message .= "\nНа среду:\n" . file_get_contents('days/3');
-                $message .= "\nНа четверг:\n" . file_get_contents('days/4');
-                $message .= "\nНа пятницу:\n" . file_get_contents('days/5');
-                $message .= "\nНа субботу:\n" . file_get_contents('days/6');
+                $message .= "\nНа понедельник:\n" . file_get_contents('TextTimetable/1');
+                $message .= "\nНа вторник:\n" . file_get_contents('TextTimetable/2');
+                $message .= "\nНа среду:\n" . file_get_contents('TextTimetable/3');
+                $message .= "\nНа четверг:\n" . file_get_contents('TextTimetable/4');
+                $message .= "\nНа пятницу:\n" . file_get_contents('TextTimetable/5');
+                $message .= "\nНа субботу:\n" . file_get_contents('TextTimetable/6');
                 sendMessage($message, $peer);
                 break;
         }

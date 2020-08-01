@@ -37,18 +37,18 @@ if ($input != "") {
     }
 
 
-    $text_schedule_file = fopen('../changes', 'wb');
-    if (!$text_schedule_file) {
+    $text_timetable_file = fopen('../changes', 'wb');
+    if (!$text_timetable_file) {
         die('{"error":"Could not open required file", "errorcode":8}');
     }
-    fwrite($text_schedule_file, $data->TextChanges);
-    fclose($text_schedule_file);
-    $numeric_schedule_file = fopen('../NumericChanges', 'wb');
-    if (!$numeric_schedule_file) {
+    fwrite($text_timetable_file, $data->TextChanges);
+    fclose($text_timetable_file);
+    $numeric_timetable_file = fopen('../NumericChanges', 'wb');
+    if (!$numeric_timetable_file) {
         die('{"error":"Could not open required file", "errorcode":8}');
     }
-    fwrite($numeric_schedule_file, implode("\n", $data->NumericChanges));
-    fclose($numeric_schedule_file);
+    fwrite($numeric_timetable_file, implode("\n", $data->NumericChanges));
+    fclose($numeric_timetable_file);
     echo json_encode(array('success' => true), JSON_UNESCAPED_UNICODE);
 } else {
     die('{"error":"Empty request","errorcode":7}');
