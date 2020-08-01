@@ -1,25 +1,26 @@
 <?php
 include 'checkAuth.php';
 
-function getNumericSchedule($day) {
-    if($day < 1 || $day > 6) {
-         return false;
-     } else {
-        $schedule = explode ("\n", file_get_contents("../NumericDays/".$day));
-        for($i = 0; $i < count($schedule); $i++)
-        {
+function getNumericSchedule($day)
+{
+    if ($day < 1 || $day > 6) {
+        return false;
+    } else {
+        $schedule = explode("\n", file_get_contents("../NumericDays/" . $day));
+        for ($i = 0; $i < count($schedule); $i++) {
             $schedule[$i] = intval($schedule[$i]);
         }
-         return $schedule;
-     }
+        return $schedule;
+    }
 }
-function getTextSchedule($day) {
-    if($day < 1 || $day > 6) {
-         return false;
-     } else {
-        $tschedule = file_get_contents("../days/".$day);
-         return $tschedule;
-     }
+function getTextSchedule($day)
+{
+    if ($day < 1 || $day > 6) {
+        return false;
+    } else {
+        $tschedule = file_get_contents("../days/" . $day);
+        return $tschedule;
+    }
 }
 
 $res = array(
@@ -41,4 +42,3 @@ $res = array(
     )
 );
 echo json_encode($res, JSON_UNESCAPED_UNICODE);
-
