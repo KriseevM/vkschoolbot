@@ -1,3 +1,4 @@
 <?php
+$path = realpath(dirname(__FILE__));
 require_once 'vendor/autoload.php';
-copy("bot.db", "bot.db.bak");
+copy($path."/../bot.db", $path."/../bot.db.bak");

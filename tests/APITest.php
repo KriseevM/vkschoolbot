@@ -1,11 +1,12 @@
 <?php
 use PHPUnit\Framework\TestCase;
-include 'API.php';
+include realpath(dirname(__FILE__)).'/../api/API.php';
 class APITest extends TestCase
 {
     public function testAuth()
     {
-        $db = new SQLite3('bot.db');
+        $path = realpath(dirname(__FILE__));
+        $db = new SQLite3($path.'/../bot.db');
         $user = "DEFAULT";
         $pass = "1234";
         $ip = "127.0.0.1";
@@ -16,7 +17,7 @@ class APITest extends TestCase
         $this->assertEquals($expected_key, $key);
         return $key;
     }
-    public function testAuthError()
+    public function testAuthInvalidUserdata()
     {
         $this->expectExceptionMessage(API::ERROR_INCORRECT_AUTH_DATA);
         API::auth("FAILS", "FAILS", "127.0.0.1");

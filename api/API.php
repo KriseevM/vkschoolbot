@@ -1,4 +1,5 @@
 <?php
+
 ini_set('display_errors', 'off');
 final class API
 {
@@ -11,6 +12,9 @@ final class API
     const ERROR_INVALID_PARAMETERS = "Parameters are invalid"; // errorcode 7
     const ERROR_FILE_INACCESSIBLE = "Can't access file"; // errorcode 8
     const ERROR_LOW_PRIVILEGES = "Method can not be executed by this user"; // errorcode 9
+
+    
+
     private static function random_string() : string
     {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-()#@!$%^&*=+.';
@@ -28,7 +32,8 @@ final class API
     }
     public static function auth(string $user, string $pass, string $ip): string
     {
-        $db = new SQLite3("bot.db");
+        $path = realpath(dirname(__FILE__));
+        $db = new SQLite3($path."/../bot.db");
         if (!preg_match("/^[\w]+$/", $user)) {
             throw new Exception(API::ERROR_INCORRECT_AUTH_DATA, 3);
         }
