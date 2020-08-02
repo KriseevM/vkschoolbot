@@ -15,3 +15,4 @@ jobs:
     - uses: php-actions/phpunit@v1
       with:
         config: phpunit/phpunit.xml
+        bootstrap: phpunit/bootstrap.php
