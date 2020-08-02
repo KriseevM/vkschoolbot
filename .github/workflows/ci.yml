@@ -11,8 +11,5 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - uses: php-actions/composer@v1
-    - uses: php-actions/phpunit@v1
-      with:
-        config: phpunit/phpunit.xml
-        bootstrap: phpunit/bootstrap.php
+    - run: composer install --no-progress --no-suggest
+    - run: vendor/bin/phpunit -c phpunit/phpunit.xml
