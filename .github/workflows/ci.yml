@@ -1,0 +1,17 @@
+name: CI
+
+on: 
+  push: 
+  pull_request:
+    branches: [master, development]
+jobs:
+  build-test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - uses: php-actions/composer@v1
+    - uses: php-actions/phpunit@v1
+    - with:
+        config: phpunit/phpunit.xml
