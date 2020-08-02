@@ -3,18 +3,18 @@
 ini_set('display_errors', 'off');
 final class API
 {
-    const ERROR_DATABASE_CONNECTION = "Failed to connect to database"; // errorcode 1
-    const ERROR_EXECUTING_SQL = "Failed to execute SQL query"; // errorcode 2
-    const ERROR_INCORRECT_AUTH_DATA = "Incorrect login or password"; // errorcode 3
-    const ERROR_INVALID_KEY = "Key is invalid for this IP address"; // errorcode 4
-    const ERROR_EXPIRED_KEY = "Key is expired"; // errorcode 5
-    const ERROR_MISSING_AUTH_DATA = "Authorisation data is missing"; // errorcode 6
-    const ERROR_INVALID_PARAMETERS = "Parameters are invalid"; // errorcode 7
-    const ERROR_FILE_INACCESSIBLE = "Can't access file"; // errorcode 8
-    const ERROR_LOW_PRIVILEGES = "Method can not be executed by this user"; // errorcode 9
+    public const ERROR_DATABASE_CONNECTION = "Failed to connect to database"; // errorcode 1
+    public const ERROR_EXECUTING_SQL = "Failed to execute SQL query"; // errorcode 2
+    public const ERROR_INCORRECT_AUTH_DATA = "Incorrect login or password"; // errorcode 3
+    public const ERROR_INVALID_KEY = "Key is invalid for this IP address"; // errorcode 4
+    public const ERROR_EXPIRED_KEY = "Key is expired"; // errorcode 5
+    public const ERROR_MISSING_AUTH_DATA = "Authorisation data is missing"; // errorcode 6
+    public const ERROR_INVALID_PARAMETERS = "Parameters are invalid"; // errorcode 7
+    public const ERROR_FILE_INACCESSIBLE = "Can't access file"; // errorcode 8
+    public const ERROR_LOW_PRIVILEGES = "Method can not be executed by this user"; // errorcode 9
 
-    
-
+    private $path;
+    private $pr_level;
     private static function random_string() : string
     {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-()#@!$%^&*=+.';
@@ -27,8 +27,43 @@ final class API
 
         return $random_string;
     }
-    public function __construct(string $key)
+    public function __construct(string $key, string $ip)
     {
+        $this->path = realpath(dirname(__FILE__));
+        if (!(preg_match("/^[a-f\d]{64}$/", $key) === 1)) {
+            throw new Exception(API::ERROR_INVALID_KEY, 4);
+        }
+        $time = time();
+        $db = new SQLite3($this->path."/../bot.db");
+        $check_query = "SELECT expiration_time, user FROM PassKeys WHERE passkey=:key AND ip=:ip";
+        $check_stmt = $db->prepare($check_query);
+        $check_stmt->bindValue(':key', $key);
+        $check_stmt->bindValue(':ip', $ip);
+        $res = $check_stmt->execute()->fetchArray(SQLITE3_NUM);
+        if ($res === false) {
+            throw new Exception(API::ERROR_INVALID_KEY, 4);
+        } else {
+            $exp_time = $res[0];
+            if ($time > $exp_time) {
+                $remove_query = "DELETE FROM PassKeys WHERE passkey=:key";
+                $remove_stmt = $db->prepare($remove_query);
+                $remove_stmt->bindValue(':key', $key);
+                $remove_stmt->execute();
+        
+                throw new Exception(API::ERROR_EXPIRED_KEY, 5);
+            } else {
+                $reset_time_query = "UPDATE PassKeys SET expiration_time=:time WHERE passkey=:key";
+                $reset_time_stmt = $db->prepare($reset_time_query);
+                $reset_time_stmt->bindValue(':time', $time + 1800);
+                $reset_time_stmt->bindValue(':key', $key);
+                $reset_time_stmt->execute();
+                $auth_user = $res[1];
+                $authpr_query = "SELECT pr_level FROM UserData WHERE user=:user";
+                $authpr_stmt = $db->prepare($authpr_query);
+                $authpr_stmt->bindValue(':user', $auth_user);
+                $this->pr_level = $authpr_stmt->execute()->fetchArray(SQLITE3_NUM)[0];
+            }
+        }
     }
     public static function auth(string $user, string $pass, string $ip): string
     {
