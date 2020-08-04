@@ -173,6 +173,10 @@ final class API
      */
     public function add_subjects_method(object $inputdata): int
     {
+        if($this->pr_level < 2)
+        {
+            throw new Exception(API::ERROR_LOW_PRIVILEGES, 9);
+        }
         $schema = (object)[
             'type' => 'object',
             'properties' => (object)[
