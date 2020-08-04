@@ -173,8 +173,7 @@ final class API
      */
     public function add_subjects_method(object $inputdata): int
     {
-        if($this->pr_level < 2)
-        {
+        if ($this->pr_level < 2) {
             throw new Exception(API::ERROR_LOW_PRIVILEGES, 9);
         }
         $schema = (object)[
@@ -193,6 +192,18 @@ final class API
         API::validate($schema, $inputdata);
         return $this->add_subjects($inputdata->names);
     }
+
+    public function get_subjects_method(): array
+    {
+        $query = "SELECT ID, Subject FROM Homeworkdata";
+        $res = $this->db->query($query);
+        $result = array();
+        while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
+            $result[] = array('ID' => $row["ID"], 'Name' => $row["Subject"]);
+        }
+        return $result;
+    }
+
     private static function validate(object $schema, object $data)
     {
         $validator = new JsonSchema\Validator();

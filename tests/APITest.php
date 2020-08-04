@@ -54,6 +54,7 @@ class APITest extends TestCase
         $actual = $api->add_subjects_method(json_decode($data));
         $expected = 2;
         $this->assertEquals($expected, $actual);
+        return $api;
     }
     /**
      * @depends testCheckAuth
@@ -68,8 +69,24 @@ class APITest extends TestCase
         $actual = $api->add_subjects_method(json_decode($data));
         $expected = 2;
         $this->assertEquals($expected, $actual);
+        return $api;
     }
-
+    /**
+     * @depends testAddSubjects
+     */
+    public function testGetSubjects(API $api)
+    {
+        $expected = [
+            ['ID' => 1, 'Name' => 'Subject1'],
+            ['ID' => 2, 'Name' => 'Subject2'],
+            ['ID' => 3, 'Name' => 'Subject3'],
+            ['ID' => 4, 'Name' => 'Subject4'],
+            ['ID' => 5, 'Name' => 'Subject5'],
+            ['ID' => 6, 'Name' => 'Subject6']
+        ];
+        $actual = $api->get_subjects_method();
+        $this->assertEquals($expected, $actual);
+    }
     /**
      * @afterClass
      */
