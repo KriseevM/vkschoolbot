@@ -6,6 +6,15 @@ class APITest extends TestCase
     private $user = "DEFAULT";
     private $pass = "1234";
     private $ip = "127.0.0.1";
+    
+    /**
+     * @beforeClass
+     */
+    public static function prepare()
+    {
+        $path = realpath(dirname(__FILE__));
+        copy($path."/../bot.db", $path."/../bot.db.bak");
+    }
     public function testAuth()
     {
         $path = realpath(dirname(__FILE__));
@@ -29,6 +38,7 @@ class APITest extends TestCase
     {
         $api = new API($key, $this->ip);
         $this->assertInstanceOf(API::class, $api);
+        return $api;
     }
     public function testCheckAuthInvalidKey()
     {
