@@ -7,7 +7,8 @@ try {
     $key = $_SERVER['HTTP_KEY'];
     $ip = $_SERVER['REMOTE_ADDR'];
     $api = new API($key, $ip);
-    $api->add_subjects_method($data);
+    $result = $api->add_subjects_method($data);
+    echo json_encode(['added_subjects' => $result]);
 } catch (Exception $e) {
     die(json_encode(['error' => $e->getMessage(), 'errorcode' => $e->getCode()]));
 } catch (TypeError $e) {
