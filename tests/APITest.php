@@ -43,6 +43,43 @@ class APITest extends TestCase
     public function testCheckAuthInvalidKey()
     {
         $this->expectExceptionMessage(API::ERROR_INVALID_KEY);
-        $api = new API("FAILED", "127.0.0.1");
+        $api = new API("FAILED", $this->ip);
+    }
+    /**
+     * @depends testCheckAuth
+     */
+    public function testAddSubjects(API $api)
+    {
+        $data = "{\"names\":[\"Subject1\", \"Subject2\"]}";
+        $actual = $api->add_subjects_method(json_decode($data));
+        $expected = 2;
+        $this->assertEquals($expected, $actual);
+    }
+    /**
+     * @depends testCheckAuth
+     */
+    public function testDoubleAddSubjects(API $api)
+    {
+        $data = "{\"names\":[\"Subject3\", \"Subject4\"]}";
+        $actual = $api->add_subjects_method(json_decode($data));
+        $expected = 2;
+        $this->assertEquals($expected, $actual);
+        $data = "{\"names\":[\"Subject5\", \"Subject6\"]}";
+        $actual = $api->add_subjects_method(json_decode($data));
+        $expected = 2;
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * @afterClass
+     */
+    public static function restoreDatabase()
+    {
+        $path = realpath(dirname(__FILE__));
+        unlink($path."/../bot.db");
+        if(copy($path."/../bot.db.bak", $path."/../bot.db"))
+        {
+            unlink($path."/../bot.db.bak");
+        }
     }
 }

@@ -1,21 +1,58 @@
 <?php
-
 ini_set('display_errors', 'off');
 final class API
 {
-    public const ERROR_DATABASE_CONNECTION = "Failed to connect to database"; // errorcode 1
-    public const ERROR_EXECUTING_SQL = "Failed to execute SQL query"; // errorcode 2
-    public const ERROR_INCORRECT_AUTH_DATA = "Incorrect login or password"; // errorcode 3
-    public const ERROR_INVALID_KEY = "Key is invalid for this IP address"; // errorcode 4
-    public const ERROR_EXPIRED_KEY = "Key is expired"; // errorcode 5
-    public const ERROR_MISSING_AUTH_DATA = "Authorisation data is missing"; // errorcode 6
-    public const ERROR_INVALID_PARAMETERS = "Parameters are invalid"; // errorcode 7
-    public const ERROR_FILE_INACCESSIBLE = "Can't access file"; // errorcode 8
-    public const ERROR_LOW_PRIVILEGES = "Method can not be executed by this user"; // errorcode 9
+
+    /**
+     * Thrown on database connection fail.
+     * Error code: 1
+     */
+    public const ERROR_DATABASE_CONNECTION = "Failed to connect to database";
+    /**
+     * Thrown if sql statement cannot be executed or failed on execution.
+     * Error code: 2
+     */
+    public const ERROR_EXECUTING_SQL = "Failed to execute SQL query";
+    /**
+     * Thrown where auth data oassed to auth function is not valid.
+     * Error code: 3
+     */
+    public const ERROR_INCORRECT_AUTH_DATA = "Incorrect login or password";
+    /**
+     * Thrown if key given to constructor is not correct or didnot found in database.
+     * Error code: 4
+     */
+    public const ERROR_INVALID_KEY = "Key is invalid for this IP address";
+    /**
+     * Thrown if given key is expired.
+     * Error code: 5
+     */
+    public const ERROR_EXPIRED_KEY = "Key is expired";
+    /**
+     * Thrown if some auth data is missing.
+     * Error code: 6
+     */
+    public const ERROR_MISSING_AUTH_DATA = "Authorisation data is missing";
+    /**
+     * Thrown when some of the parameters did not pass all checks.
+     * Error code: 7 
+     */
+    public const ERROR_INVALID_PARAMETERS = "Parameters are invalid";
+    /**
+     * Thrown if changes of timetable files are inaccessible for write.
+     * Error code: 8
+     */
+    public const ERROR_FILE_INACCESSIBLE = "Can't access file";
+    /**
+     * Thrown when user with pr_level = 1 tries to run method for users with pr_level = 2.
+     * Error code: 9 
+     */
+    public const ERROR_LOW_PRIVILEGES = "Method can not be executed by this user";
 
     private $path;
     private $pr_level;
-    private static function random_string() : string
+    private SQLite3 $db;
+    private static function random_string(): string
     {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-()#@!$%^&*=+.';
         $random_string = '';
@@ -34,9 +71,9 @@ final class API
             throw new Exception(API::ERROR_INVALID_KEY, 4);
         }
         $time = time();
-        $db = new SQLite3($this->path."/../bot.db");
+        $this->db = new SQLite3($this->path . "/../bot.db");
         $check_query = "SELECT expiration_time, user FROM PassKeys WHERE passkey=:key AND ip=:ip";
-        $check_stmt = $db->prepare($check_query);
+        $check_stmt = $this->db->prepare($check_query);
         $check_stmt->bindValue(':key', $key);
         $check_stmt->bindValue(':ip', $ip);
         $res = $check_stmt->execute()->fetchArray(SQLITE3_NUM);
@@ -46,20 +83,20 @@ final class API
             $exp_time = $res[0];
             if ($time > $exp_time) {
                 $remove_query = "DELETE FROM PassKeys WHERE passkey=:key";
-                $remove_stmt = $db->prepare($remove_query);
+                $remove_stmt = $this->db->prepare($remove_query);
                 $remove_stmt->bindValue(':key', $key);
                 $remove_stmt->execute();
-        
+
                 throw new Exception(API::ERROR_EXPIRED_KEY, 5);
             } else {
                 $reset_time_query = "UPDATE PassKeys SET expiration_time=:time WHERE passkey=:key";
-                $reset_time_stmt = $db->prepare($reset_time_query);
+                $reset_time_stmt = $this->db->prepare($reset_time_query);
                 $reset_time_stmt->bindValue(':time', $time + 1800);
                 $reset_time_stmt->bindValue(':key', $key);
                 $reset_time_stmt->execute();
                 $auth_user = $res[1];
                 $authpr_query = "SELECT pr_level FROM UserData WHERE user=:user";
-                $authpr_stmt = $db->prepare($authpr_query);
+                $authpr_stmt = $this->db->prepare($authpr_query);
                 $authpr_stmt->bindValue(':user', $auth_user);
                 $this->pr_level = $authpr_stmt->execute()->fetchArray(SQLITE3_NUM)[0];
             }
@@ -68,7 +105,7 @@ final class API
     public static function auth(string $user, string $pass, string $ip): string
     {
         $path = realpath(dirname(__FILE__));
-        $db = new SQLite3($path."/../bot.db");
+        $db = new SQLite3($path . "/../bot.db");
         if (!preg_match("/^[\w]+$/", $user)) {
             throw new Exception(API::ERROR_INCORRECT_AUTH_DATA, 3);
         }
@@ -114,6 +151,55 @@ final class API
             return $key;
         } else {
             throw new Exception(API::ERROR_INCORRECT_AUTH_DATA, 3);
+        }
+    }
+
+    private function add_subjects(array $names)
+    {
+        $placeholders = rtrim(str_repeat('(?), ', count($names)), ', ');
+        $query = "INSERT INTO Homeworkdata (Subject) VALUES $placeholders";
+        $stmt = $this->db->prepare($query);
+        for ($i = 1; $i <= count($names); $i++) {
+            $stmt->bindValue($i, $names[$i - 1]);
+        }
+        $stmt->execute();
+        $result = $this->db->changes();
+        return $result;
+    }
+
+    /**
+     * Добавление предметов в базу данных
+     * $inputdata - декодированный из json объект
+     */
+    public function add_subjects_method(object $inputdata): int
+    {
+        $schema = (object)[
+            'type' => 'object',
+            'properties' => (object)[
+                'names' => (object)[
+                    'type' => 'array',
+                    'items' => (object)[
+                        'type' => 'string',
+                        'pattern' => '^[\\wА-Яа-яЁё\\s-]{1,50}$'
+                    ],
+                    'required' => true
+                ]
+            ]
+        ];
+        API::validate($schema, $inputdata);
+        return $this->add_subjects($inputdata->names);
+    }
+    private static function validate(object $schema, object $data)
+    {
+        $validator = new JsonSchema\Validator();
+        $validator->validate($data, $schema);
+        if (!$validator->isValid()) {
+            $message = "Failed to validate parameters: ";
+            foreach ($validator->getErrors() as $error) {
+                $message .= $error['message'] . ", ";
+            }
+            $message = rtrim($message, ", ");
+            throw new Exception($message, 7);
         }
     }
 }
