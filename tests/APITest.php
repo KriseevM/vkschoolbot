@@ -86,7 +86,20 @@ class APITest extends TestCase
         ];
         $actual = $api->get_subjects_method();
         $this->assertEquals($expected, $actual);
+        return $api;
     }
+    /**
+     * @depends testGetSubjects
+     */
+    public function testDeleteSubjects(API $api)
+    {
+        $data = "{\"IDs\":[5,6]}";
+
+        $expected = 2;
+        $actual = $api->delete_subjects_method(json_decode($data));
+        $this->assertEquals($expected, $actual);
+    }
+
     /**
      * @afterClass
      */

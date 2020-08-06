@@ -171,7 +171,7 @@ final class API
      * Добавление предметов в базу данных
      * $inputdata - декодированный из json объект
      */
-    public function add_subjects_method(object $inputdata): int
+    public function add_subjects_method(object $input_data): int
     {
         if ($this->pr_level < 2) {
             throw new Exception(API::ERROR_LOW_PRIVILEGES, 9);
@@ -189,8 +189,8 @@ final class API
                 ]
             ]
         ];
-        API::validate($schema, $inputdata);
-        return $this->add_subjects($inputdata->names);
+        API::validate($schema, $input_data);
+        return $this->add_subjects($input_data->names);
     }
 
     public function get_subjects_method(): array
@@ -203,7 +203,38 @@ final class API
         }
         return $result;
     }
-
+    private function delete_subjects(array $IDs): int
+    {
+        $placeholders = rtrim(str_repeat('?, ', count($IDs)), ', ');
+        $query = "DELETE FROM Homeworkdata WHERE ID IN ($placeholders);";
+        $stmt = $this->db->prepare($query);
+        for ($i = 1; $i <= count($IDs); $i++) {
+            $stmt->bindValue($i, $IDs[$i - 1]);
+        }
+        $stmt->execute();
+        $result = $this->db->changes();
+        return $result;
+    }
+    public function delete_subjects_method(object $input_data): int
+    {
+        if ($this->pr_level < 2) {
+            throw new Exception(API::ERROR_LOW_PRIVILEGES, 9);
+        }
+        $schema = (object)[
+            'type' => 'object',
+            'properties' => (object)[
+                'IDs' => (object)[
+                    'type' => 'array',
+                    'items' => (object)[
+                        'type' => 'integer'
+                    ],
+                    'required' => true
+                ]
+            ]
+        ];
+        API::validate($schema, $input_data);
+        return $this->delete_subjects($input_data->IDs);
+    }
     private static function validate(object $schema, object $data)
     {
         $validator = new JsonSchema\Validator();
