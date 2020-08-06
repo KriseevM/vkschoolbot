@@ -12,5 +12,5 @@ try {
 } catch (Exception $e) {
     die(json_encode(['error' => $e->getMessage(), 'errorcode' => $e->getCode()]));
 } catch (TypeError $e) {
-    die(json_encode(['error' => API::ERROR_MISSING_AUTH_DATA, 'errorcode' => 6]));
+    die(json_encode(['error' => API::ERROR_INVALID_PARAMETERS, 'errorcode' => 7]));
 }
