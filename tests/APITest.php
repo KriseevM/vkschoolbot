@@ -99,7 +99,16 @@ class APITest extends TestCase
         $actual = $api->delete_subjects_method(json_decode($data));
         $this->assertEquals($expected, $actual);
     }
-
+    /**
+     * @depends testAddSubjects
+     */
+    public function testUpdateHomework(API $api)
+    {
+        $data = "{\"ID\":1, \"Homework\":\"Homework for subject 1\"}";
+        $expected = true;
+        $actual = $api->update_homework_method(json_decode($data));
+        $this->assertEquals($expected, $actual);        
+    }
     /**
      * @afterClass
      */

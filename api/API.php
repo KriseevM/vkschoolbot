@@ -235,6 +235,34 @@ final class API
         API::validate($schema, $input_data);
         return $this->delete_subjects($input_data->IDs);
     }
+    private function update_homework(int $id, string $homework): bool
+    {
+        $query = "UPDATE Homeworkdata SET Homework=:homework WHERE ID = :id";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindValue(':homework', $homework);
+        $stmt->bindValue(':id', $id);
+        $stmt->execute();
+        return boolval($this->db->changes());
+    }
+    public function update_homework_method(object $input_data): bool
+    {
+        $schema = (object)[
+            'type' => 'object',
+            'properties' => (object) [
+                'ID' => (object)[
+                    'type' => 'integer',
+                    'required' => true
+                ],
+                'Homework' => (object)[
+                    'type' => 'string',
+                    'required' => true
+                ]
+            ]
+        ];
+        API::validate($schema, $input_data);
+        return $this->update_homework($input_data->ID, $input_data->Homework);
+    }
+
     private static function validate(object $schema, object $data)
     {
         $validator = new JsonSchema\Validator();

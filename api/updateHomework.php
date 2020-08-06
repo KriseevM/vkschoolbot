@@ -1,43 +1,16 @@
 <?php
 require_once '../vendor/autoload.php';
-$input = file_get_contents('php://input');
-if ($input != "") {
-
-    //Checks and auth
+include 'API.php';
+try {
+    $input = file_get_contents('php://input');
     $data = json_decode($input);
-    $validator = new JsonSchema\Validator;
-    $schema = (object)[
-        'type' => 'object',
-        'properties' => (object) [
-            'ID' => (object)[
-                'type' => 'integer',
-                'required' => true
-            ],
-            'Homework' => (object)[
-                'type' => 'string',
-                'required' => true
-            ]
-        ]
-    ];
-    $validator->validate($data, $schema);
-    if (!$validator->isValid()) {
-        $errortext = "Failed to validate parameters: ";
-        foreach ($validator->getErrors() as $error) {
-            $errortext .= $error['message'] . ", ";
-        }
-        $errortext = rtrim($errortext, ", ");
-        die(json_encode(['error' => $errortext, 'errorcode' => 7]));
-    }
-    include 'checkAuth.php';
-    $homework = $data->Homework;
-    $ID = $data->ID;
-    $query = "UPDATE Homeworkdata SET Homework=:homework WHERE ID = :id";
-    $stmt = $db->prepare($query);
-    $stmt->bindValue(':homework', $homework);
-    $stmt->bindValue(':id', $ID);
-    $stmt->execute();
-    $result = boolval($db->changes());
-    echo json_encode(array('updated' => $result), JSON_UNESCAPED_UNICODE);
-} else {
-    die('{"error":"Empty request","errorcode":7}');
+    $key = $_SERVER['HTTP_KEY'];
+    $ip = $_SERVER['REMOTE_ADDR'];
+    $api = new API($key, $ip);
+    $result = $api->update_homework_method($data);
+    echo json_encode(['updated' => $result]);
+} catch (Exception $e) {
+    die(json_encode(['error' => $e->getMessage(), 'errorcode' => $e->getCode()]));
+} catch (TypeError $e) {
+    die(json_encode(['error' => API::ERROR_INVALID_PARAMETERS, 'errorcode' => 7]));
 }
