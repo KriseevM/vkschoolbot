@@ -2,7 +2,6 @@
 ini_set('display_errors', 'off');
 final class API
 {
-
     /**
      * Thrown on database connection fail.
      * Error code: 1
@@ -19,7 +18,7 @@ final class API
      */
     public const ERROR_INCORRECT_AUTH_DATA = "Incorrect login or password";
     /**
-     * Thrown if key given to constructor is not correct or didnot found in database.
+     * Thrown if key given to constructor is not correct or was not found in database.
      * Error code: 4
      */
     public const ERROR_INVALID_KEY = "Key is invalid for this IP address";
@@ -262,7 +261,14 @@ final class API
         API::validate($schema, $input_data);
         return $this->update_homework($input_data->ID, $input_data->Homework);
     }
-
+    public function get_homework_method(int $id): array
+    {
+        $query = "SELECT ID, Homework FROM Homeworkdata WHERE ID=:id";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindValue(':id', $id);
+        $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
+        return $res;
+    }
     private static function validate(object $schema, object $data)
     {
         $validator = new JsonSchema\Validator();

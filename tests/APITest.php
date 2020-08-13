@@ -89,7 +89,34 @@ class APITest extends TestCase
         return $api;
     }
     /**
-     * @depends testGetSubjects
+     * @depends testAddSubjects
+     */
+    public function testUpdateHomework(API $api)
+    {
+        $data = [
+            'ID' => 1,
+            'Homework' => 'Homework for subject 1'
+        ];
+        $expected = true;
+        $actual = $api->update_homework_method((object) $data);
+        $this->assertEquals($expected, $actual);
+        return $api;      
+    }
+    /**
+     * @depends testUpdateHomework
+     */
+    public function testGetHomework(API $api)
+    {
+        $expected = [
+            'ID' => 1,
+            'Homework' => 'Homework for subject 1'
+        ];
+        $actual = $api->get_homework_method(1);
+        $this->assertEquals($expected, $actual);
+        return $api;
+    }
+    /**
+     * @depends testGetHomework
      */
     public function testDeleteSubjects(API $api)
     {
@@ -98,16 +125,6 @@ class APITest extends TestCase
         $expected = 2;
         $actual = $api->delete_subjects_method(json_decode($data));
         $this->assertEquals($expected, $actual);
-    }
-    /**
-     * @depends testAddSubjects
-     */
-    public function testUpdateHomework(API $api)
-    {
-        $data = "{\"ID\":1, \"Homework\":\"Homework for subject 1\"}";
-        $expected = true;
-        $actual = $api->update_homework_method(json_decode($data));
-        $this->assertEquals($expected, $actual);        
     }
     /**
      * @afterClass
