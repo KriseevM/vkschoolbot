@@ -267,6 +267,10 @@ final class API
         $stmt = $this->db->prepare($query);
         $stmt->bindValue(':id', $id);
         $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
+        if($res === false)
+        {
+            throw new Exception("Subject with this ID does not exist", 7);
+        }
         return $res;
     }
     private static function validate(object $schema, object $data)
