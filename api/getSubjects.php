@@ -1,7 +1,4 @@
 <?php
-
-use PHPUnit\Util\Type;
-
 try {
     include 'API.php';
     $key = $_SERVER['HTTP_KEY'];
