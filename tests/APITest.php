@@ -127,6 +127,18 @@ class APITest extends TestCase
         $this->assertEquals($expected, $actual);
     }
     /**
+     * @depends testCheckAuth
+     */
+    public function testAddUser(API $api)
+    {
+        $result = $api->add_user_method('User1', 'User1Pass', 1);
+        $this->assertTrue($result);
+        $result = false;
+        $result = $api->add_user_method('User2', 'User1Pass', 2);
+        $this->assertTrue($result);
+        return $api;
+    }
+    /**
      * @afterClass
      */
     public static function restoreDatabase()

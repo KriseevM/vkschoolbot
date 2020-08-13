@@ -273,6 +273,24 @@ final class API
         }
         return $res;
     }
+    public function add_user_method(string $username, string $password, int $pr = 1) : bool
+    {
+        if ($this->pr_level < 2) {
+            throw new Exception(API::ERROR_LOW_PRIVILEGES, 9);
+        }
+        if (($pr !== 1 && $pr !== 2) || preg_match("/^[\w]+$/", $username) !== 1) {
+            throw new Exception(API::ERROR_INVALID_PARAMETERS, 7);
+        }
+        $query = "INSERT INTO UserData (user, pass, pr_level) VALUES(:user,:pass,:pr_level);";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindValue(':user', $username);
+        $stmt->bindValue(':pass', hash("sha256", $password));
+        $stmt->bindValue(':pr_level', $pr);
+        $result = $stmt->execute();
+        $res = boolval($this->db->changes());
+        return $res;
+    }
+
     private static function validate(object $schema, object $data)
     {
         $validator = new JsonSchema\Validator();
