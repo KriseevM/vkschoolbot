@@ -315,7 +315,7 @@ final class API
         }
         $result = (fwrite($text_changes_file, $text_changes) == strlen($text_changes));
         fclose($text_changes_file);
-        $numeric_changes_file = fopen($this->path.'/../NumericChanges', 'wb');
+        $numeric_changes_file = fopen($this->path . '/../NumericChanges', 'wb');
         if (!$numeric_changes_file) {
             throw new Exception(API::ERROR_FILE_INACCESSIBLE, 8);
         }
@@ -350,14 +350,13 @@ final class API
     public function get_changes_method(): array
     {
         $data = array(
-            'TextChanges' => file_get_contents($this->path."/../changes"),
+            'TextChanges' => file_get_contents($this->path . "/../changes"),
             'NumericChanges' => array()
         );
-        if($data['TextChanges'] === false)
-        {
+        if ($data['TextChanges'] === false) {
             throw new Exception(API::ERROR_FILE_INACCESSIBLE, 8);
         }
-        $numbers = explode("\n", file_get_contents($this->path."/../NumericChanges"));
+        $numbers = explode("\n", file_get_contents($this->path . "/../NumericChanges"));
         for ($i = 0; $i < 8; $i++) {
             $el = $numbers[$i];
             if (is_numeric($el)) {
@@ -365,6 +364,62 @@ final class API
             }
         }
         return $data;
+    }
+    private function update_timetable(array $text_timetable, array $num_timetable): bool
+    {
+        $result = true;
+        $text_timetable_dir = $this->path . '/../TextTimetable/';
+        $num_timetable_dir = $this->path . '/../NumTimetable/';
+        for ($i = 1; $i <= 6; $i++) {
+            $text_timetable_file = fopen($text_timetable_dir . $i, 'wb');
+            if (!$text_timetable_file) {
+                throw new Exception(API::ERROR_FILE_INACCESSIBLE, 8);
+            }
+            fwrite($text_timetable_file, $text_timetable[$i - 1]);
+            fclose($text_timetable_file);
+            $numeric_timetable_file = fopen($num_timetable_dir . $i, 'wb');
+            if (!$numeric_timetable_file) {
+                throw new Exception(API::ERROR_FILE_INACCESSIBLE, 8);
+            }
+            fwrite($numeric_timetable_file, implode("\n", $num_timetable[$i - 1]));
+            fclose($numeric_timetable_file);
+            $result = $result
+                && file_get_contents($num_timetable_dir . $i) == implode("\n", $num_timetable[$i - 1])
+                && file_get_contents($text_timetable_dir . $i) == $text_timetable[$i - 1];
+        }
+        return $result;
+    }
+    public function update_timetable_method(object $input_data): bool
+    {
+        $schema = (object)[
+            'type' => 'object',
+            'properties' => (object)[
+                'TextTimetable' => (object)[
+                    'type' => 'array',
+                    'items' => (object)[
+                        'type' => 'string'
+                    ],
+                    'minItems' => 6,
+                    'maxItems' => 6,
+                    'required' => true
+                ],
+                'NumericTimetable' => (object)[
+                    'type' => 'array',
+                    'items' => (object)[
+                        'type' => 'array',
+                        'items' => (object)[
+                            'type' => 'integer'
+                        ],
+                        'maxItems' => 8
+                    ],
+                    'minItems' => 6,
+                    'maxItems' => 6,
+                    'required' => true
+                ]
+            ]
+        ];
+        $this->validate($schema, $input_data);
+        return $this->update_timetable($input_data->TextTimetable, $input_data->NumericTimetable);
     }
     private static function validate(object $schema, object $data)
     {
