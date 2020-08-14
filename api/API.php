@@ -315,7 +315,7 @@ final class API
         }
         $result = (fwrite($text_changes_file, $text_changes) == strlen($text_changes));
         fclose($text_changes_file);
-        $numeric_changes_file = fopen('../NumericChanges', 'wb');
+        $numeric_changes_file = fopen($this->path.'/../NumericChanges', 'wb');
         if (!$numeric_changes_file) {
             throw new Exception(API::ERROR_FILE_INACCESSIBLE, 8);
         }
