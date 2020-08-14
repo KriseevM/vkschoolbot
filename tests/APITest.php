@@ -139,6 +139,14 @@ class APITest extends TestCase
         return $api;
     }
     /**
+     * @depends testAddUser
+     */
+    public function testDeleteUser(API $api)
+    {
+        $result = $api->delete_user_method("User1");
+        $this->assertTrue($result);
+    }
+    /**
      * @afterClass
      */
     public static function restoreDatabase()

@@ -50,6 +50,7 @@ final class API
 
     private $path;
     private $pr_level;
+    private $user;
     private SQLite3 $db;
     private static function random_string(): string
     {
@@ -85,7 +86,6 @@ final class API
                 $remove_stmt = $this->db->prepare($remove_query);
                 $remove_stmt->bindValue(':key', $key);
                 $remove_stmt->execute();
-
                 throw new Exception(API::ERROR_EXPIRED_KEY, 5);
             } else {
                 $reset_time_query = "UPDATE PassKeys SET expiration_time=:time WHERE passkey=:key";
@@ -93,10 +93,10 @@ final class API
                 $reset_time_stmt->bindValue(':time', $time + 1800);
                 $reset_time_stmt->bindValue(':key', $key);
                 $reset_time_stmt->execute();
-                $auth_user = $res[1];
+                $this->user = $res[1];
                 $authpr_query = "SELECT pr_level FROM UserData WHERE user=:user";
                 $authpr_stmt = $this->db->prepare($authpr_query);
-                $authpr_stmt->bindValue(':user', $auth_user);
+                $authpr_stmt->bindValue(':user', $this->user);
                 $this->pr_level = $authpr_stmt->execute()->fetchArray(SQLITE3_NUM)[0];
             }
         }
@@ -267,13 +267,12 @@ final class API
         $stmt = $this->db->prepare($query);
         $stmt->bindValue(':id', $id);
         $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
-        if($res === false)
-        {
+        if ($res === false) {
             throw new Exception("Subject with this ID does not exist", 7);
         }
         return $res;
     }
-    public function add_user_method(string $username, string $password, int $pr = 1) : bool
+    public function add_user_method(string $username, string $password, int $pr = 1): bool
     {
         if ($this->pr_level < 2) {
             throw new Exception(API::ERROR_LOW_PRIVILEGES, 9);
@@ -290,7 +289,24 @@ final class API
         $res = boolval($this->db->changes());
         return $res;
     }
-
+    public function delete_user_method(string $username)
+    {
+        if ($this->pr_level < 2) {
+            throw new Exception(API::ERROR_LOW_PRIVILEGES, 9);
+        }
+        if ($username == $this->user) {
+            throw new Exception("You can not delete your own user", 7);
+        }
+        if (!preg_match("/^[\w]+$/", $username)) {
+            throw new Exception(API::ERROR_INVALID_PARAMETERS, 7);
+        }
+        $query = "DELETE FROM UserData WHERE user=:user;";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindValue(':user', $username);
+        $stmt->execute();
+        $result = boolval($this->db->changes());
+        return $result;
+    }
     private static function validate(object $schema, object $data)
     {
         $validator = new JsonSchema\Validator();
