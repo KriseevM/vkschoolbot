@@ -38,7 +38,7 @@ final class API
      */
     public const ERROR_INVALID_PARAMETERS = "Parameters are invalid";
     /**
-     * Thrown if changes of timetable files are inaccessible for write.
+     * Thrown if changes or timetable files are inaccessible for write.
      * Error code: 8
      */
     public const ERROR_FILE_INACCESSIBLE = "Can't access file";
@@ -306,6 +306,46 @@ final class API
         $stmt->execute();
         $result = boolval($this->db->changes());
         return $result;
+    }
+    private function update_changes(string $text_changes, array $numeric_changes): bool
+    {
+        $text_changes_file = fopen($this->path . '/../changes', 'wb');
+        if (!$text_changes_file) {
+            throw new Exception(API::ERROR_FILE_INACCESSIBLE, 8);
+        }
+        $result = (fwrite($text_changes_file, $text_changes) == strlen($text_changes));
+        fclose($text_changes_file);
+        $numeric_changes_file = fopen('../NumericChanges', 'wb');
+        if (!$numeric_changes_file) {
+            throw new Exception(API::ERROR_FILE_INACCESSIBLE, 8);
+        }
+        $numeric_changes_contents = implode("\n", $numeric_changes);
+        $result = $result && (fwrite($numeric_changes_file, $numeric_changes_contents) == strlen($numeric_changes_contents));
+        fclose($numeric_changes_file);
+        return $result;
+    }
+    public function update_changes_method(object $input_data): bool
+    {
+        $schema = (object)[
+            'type' => 'object',
+            'properties' => (object)[
+                'TextChanges' => (object)[
+                    'type' => 'string',
+                    'required' => true
+                ],
+                'NumericChanges' => (object)[
+                    'type' => 'array',
+                    'items' => (object)[
+                        'type' => 'integer'
+                    ],
+                    'minItems' => 8,
+                    'maxItems' => 8,
+                    'required' => true
+                ]
+            ]
+        ];
+        API::validate($schema, $input_data);
+        return $this->update_changes($input_data->TextChanges, $input_data->NumericChanges);
     }
     private static function validate(object $schema, object $data)
     {

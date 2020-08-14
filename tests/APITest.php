@@ -14,6 +14,8 @@ class APITest extends TestCase
     {
         $path = realpath(dirname(__FILE__));
         copy($path."/../bot.db", $path."/../bot.db.bak");
+        copy($path."/../changes", $path."/../changes.bak");
+        copy($path."/../NumericChanges", $path."/../NumericChanges.bak");
     }
     public function testAuth()
     {
@@ -147,15 +149,36 @@ class APITest extends TestCase
         $this->assertTrue($result);
     }
     /**
+     * @depends testCheckAuth
+     */
+    public function testUpdateChanges(API $api)
+    {
+        $data = (object)[
+            'TextChanges' => 'New changes',
+            'NumericChanges' => [
+                8,7,6,5,4,3,2,1
+            ]
+        ];
+        $result = $api->update_changes_method($data);
+        $this->assertTrue($result);
+    }
+    /**
      * @afterClass
      */
     public static function restoreDatabase()
     {
         $path = realpath(dirname(__FILE__));
-        unlink($path."/../bot.db");
         if(copy($path."/../bot.db.bak", $path."/../bot.db"))
         {
             unlink($path."/../bot.db.bak");
+        }
+        if(copy($path."/../changes.bak", $path."/../changes"))
+        {
+            unlink($path."/../changes.bak");
+        }
+        if(copy($path."/../NumericChanges.bak", $path."/../NumericChanges"))
+        {
+            unlink($path."/../NumericChanges.bak");
         }
     }
 }
