@@ -347,6 +347,25 @@ final class API
         API::validate($schema, $input_data);
         return $this->update_changes($input_data->TextChanges, $input_data->NumericChanges);
     }
+    public function get_changes_method(): array
+    {
+        $data = array(
+            'TextChanges' => file_get_contents($this->path."/../changes"),
+            'NumericChanges' => array()
+        );
+        if($data['TextChanges'] === false)
+        {
+            throw new Exception(API::ERROR_FILE_INACCESSIBLE, 8);
+        }
+        $numbers = explode("\n", file_get_contents($this->path."/../NumericChanges"));
+        for ($i = 0; $i < 8; $i++) {
+            $el = $numbers[$i];
+            if (is_numeric($el)) {
+                $data['NumericChanges'][$i] = intval($el);
+            }
+        }
+        return $data;
+    }
     private static function validate(object $schema, object $data)
     {
         $validator = new JsonSchema\Validator();

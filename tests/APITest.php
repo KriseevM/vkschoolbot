@@ -161,6 +161,21 @@ class APITest extends TestCase
         ];
         $result = $api->update_changes_method($data);
         $this->assertTrue($result);
+        return $api;
+    }
+    /**
+     * @depends testUpdateChanges
+     */
+    public function testGetChanges(API $api)
+    {
+        $expected = [
+            'TextChanges' => 'New changes',
+            'NumericChanges' => [
+                8,7,6,5,4,3,2,1
+            ]
+        ];
+        $actual = $api->get_changes_method();
+        $this->assertEquals($expected, $actual);
     }
     /**
      * @afterClass
