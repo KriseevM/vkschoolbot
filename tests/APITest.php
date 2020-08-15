@@ -202,6 +202,33 @@ class APITest extends TestCase
         ];
         $result = $api->update_timetable_method($data);
         $this->assertTrue($result);
+        return $api;
+    }
+    /**
+     * @depends testUpdateTimetable
+     */
+    public function testGetTimetable(API $api)
+    {
+        $expected = [
+            'TextTimetable' =>[
+                "Timetable 1",
+                "Timetable 2",
+                "Timetable 3",
+                "Timetable 4",
+                "Timetable 5",
+                "Timetable 6"
+            ],
+            'NumericTimetable' =>[
+                [6, 5, 4, 3, 2, 1],
+                [7, 6, 5, 4, 3, 2],
+                [8, 7, 6, 5, 4, 3],
+                [3, 2, 1, 6, 5, 4],
+                [2, 1, 6, 5, 4, 3],
+                [1, 6, 5, 4, 3, 2]
+            ]
+        ];
+        $actual = $api->get_timetable_method();
+        $this->assertEquals($expected, $actual);
     }
     /**
      * @afterClass

@@ -421,6 +421,49 @@ final class API
         $this->validate($schema, $input_data);
         return $this->update_timetable($input_data->TextTimetable, $input_data->NumericTimetable);
     }
+    private function get_numeric_timetable($day)
+    {
+        if ($day < 1 || $day > 6) {
+            return false;
+        } else {
+            $timetable = explode("\n", file_get_contents($this->path . "/../NumTimetable/" . $day));
+            for ($i = 0; $i < count($timetable); $i++) {
+                $timetable[$i] = intval($timetable[$i]);
+            }
+            return $timetable;
+        }
+    }
+    private function get_text_timetable($day)
+    {
+        if ($day < 1 || $day > 6) {
+            return false;
+        } else {
+            $timetable = file_get_contents($this->path . "/../TextTimetable/" . $day);
+            return $timetable;
+        }
+    }
+    public function get_timetable_method()
+    {
+        $res = [
+            'TextTimetable' => [
+                $this->get_text_timetable(1),
+                $this->get_text_timetable(2),
+                $this->get_text_timetable(3),
+                $this->get_text_timetable(4),
+                $this->get_text_timetable(5),
+                $this->get_text_timetable(6)
+            ],
+            'NumericTimetable' => [
+                $this->get_numeric_timetable(1),
+                $this->get_numeric_timetable(2),
+                $this->get_numeric_timetable(3),
+                $this->get_numeric_timetable(4),
+                $this->get_numeric_timetable(5),
+                $this->get_numeric_timetable(6)
+            ]
+        ];
+        return $res;
+    }
     private static function validate(object $schema, object $data)
     {
         $validator = new JsonSchema\Validator();
