@@ -11,5 +11,8 @@
             "name": "Kriseev Mikhail",
             "email": "mkris.yt@gmail.com"
         }
-    ]
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^9"
+    }
 }
