@@ -1,23 +1,13 @@
 <?php
-if(!isset($_GET['key'])) 
-{
-    die('{"error":"Key is required for authorisation","errorcode":6}');
+try {
+    include 'API.php';
+    $key = $_SERVER['HTTP_KEY'];
+    $ip = $_SERVER['REMOTE_ADDR'];
+    $api = new API($key, $ip);
+    $result = $api->get_changes_method();
+    echo json_encode($result, JSON_UNESCAPED_UNICODE);
+} catch (Exception $e) {
+    die(json_encode(['error' => $e->getMessage(), 'errorcode' => $e->getCode()]));
+} catch (TypeError $e) {
+    die(json_encode(['error' => API::ERROR_INVALID_KEY, 'errorcode' => 4]));
 }
-$key = $_GET['key'];
-include 'checkAuth.php';
-
-$data = array(
-    'TextChanges' => file_get_contents("../changes"),
-    'NumericChanges' => array()
-);
-$numbers = explode("\n", file_get_contents("../NumericChanges"));
-for($i = 0; $i < 8; $i++)
-{
-    $el = $numbers[$i];
-    if(is_numeric($el))
-    {
-        $data['NumericChanges'][$i] = intval($el);
-    }    
-}
-echo json_encode($data, JSON_UNESCAPED_UNICODE);
-?>

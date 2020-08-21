@@ -4,8 +4,10 @@ try {
     $key = $_SERVER['HTTP_KEY'];
     $ip = $_SERVER['REMOTE_ADDR'];
     $user = $_GET['user'];
+    $pass = $_GET['pass'];
+    $pr = $_GET['pr'];
     $api = new API($key, $ip);
-    $result = $api->delete_user_method($user);
+    $result = $api->add_user_method($user, $pass, $pr);
     echo json_encode($result, JSON_UNESCAPED_UNICODE);
 } catch (Exception $e) {
     die(json_encode(['error' => $e->getMessage(), 'errorcode' => $e->getCode()]));

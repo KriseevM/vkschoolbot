@@ -1,18 +1,13 @@
 <?php
-if(!isset($_GET['key'])) 
-{
-    die('{"error":"Key is required for authorisation","errorcode":6}');
+try {
+    include 'API.php';
+    $key = $_SERVER['HTTP_KEY'];
+    $ip = $_SERVER['REMOTE_ADDR'];
+    $api = new API($key, $ip);
+    $result = $api->get_subjects_method();
+    echo json_encode($result, JSON_UNESCAPED_UNICODE);
+} catch (Exception $e) {
+    die(json_encode(['error' => $e->getMessage(), 'errorcode' => $e->getCode()]));
+} catch (TypeError $e) {
+    die(json_encode(['error' => API::ERROR_INVALID_KEY, 'errorcode' => 4]));
 }
-$key = $_GET['key'];
-include 'checkAuth.php';
-$query = "SELECT ID, Subject FROM Homeworkdata";
-$res = $db->query($query);
-
-
-$output = array();
-while($row = $res->fetchArray(SQLITE3_ASSOC))
-{
-	$output[] = array('ID' => $row["ID"], 'Name' => $row["Subject"]);
-}
-echo json_encode($output, JSON_UNESCAPED_UNICODE);
-?>
