@@ -3,12 +3,11 @@ include 'API.php';
 try {
     $key = $_SERVER['HTTP_KEY'];
     $ip = $_SERVER['REMOTE_ADDR'];
-    $user = $_GET['user'];
-    $pass = $_GET['pass'];
-    $pr = $_GET['pr'];
+    $input = file_get_contents('php://input');
+    $data = json_decode($input);
     $api = new API($key, $ip);
-    $result = $api->add_user_method($user, $pass, $pr);
-    echo json_encode($result, JSON_UNESCAPED_UNICODE);
+    $result = $api->add_user_method($data);
+    echo json_encode(['added' => $result], JSON_UNESCAPED_UNICODE);
 } catch (Exception $e) {
     die(json_encode(['error' => $e->getMessage(), 'errorcode' => $e->getCode()]));
 } catch (TypeError $e) {

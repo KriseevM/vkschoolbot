@@ -272,14 +272,36 @@ final class API
         }
         return $res;
     }
-    public function add_user_method(string $username, string $password, int $pr = 1): bool
+    public function add_user_method(object $input_data): bool
     {
         if ($this->pr_level < 2) {
             throw new Exception(API::ERROR_LOW_PRIVILEGES, 9);
         }
-        if (($pr !== 1 && $pr !== 2) || preg_match("/^[\w]+$/", $username) !== 1) {
-            throw new Exception(API::ERROR_INVALID_PARAMETERS, 7);
-        }
+        $schema = (object)[
+            'type' => 'object',
+            'properties' => (object)[
+                'user' => (object)[
+                    'type' => 'string',
+                    'pattern' => '^[\\w]+$',
+                    'required' => true
+                ],
+                'pass' => (object)[
+                    'type' => 'string',
+                    'required' => true
+                ],
+                'pr' => (object)[
+                    'type' => 'integer',
+                    'minimum' => 1,
+                    'maximum' => 2,
+                    'required' => true
+                ]
+            ]
+        ];
+        API::validate($schema, $input_data);
+        return $this->add_user($input_data->user, $input_data->pass, $input_data->pr);
+    }
+    private function add_user(string $username, string $password, int $pr = 1) : bool
+    {
         $query = "INSERT INTO UserData (user, pass, pr_level) VALUES(:user,:pass,:pr_level);";
         $stmt = $this->db->prepare($query);
         $stmt->bindValue(':user', $username);

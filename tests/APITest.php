@@ -122,10 +122,11 @@ class APITest extends TestCase
      */
     public function testDeleteSubjects(API $api)
     {
-        $data = "{\"IDs\":[5,6]}";
-
+        $data = (object)[
+            'IDs' => [5,6]
+        ];
         $expected = 2;
-        $actual = $api->delete_subjects_method(json_decode($data));
+        $actual = $api->delete_subjects_method($data);
         $this->assertEquals($expected, $actual);
     }
     /**
@@ -133,10 +134,12 @@ class APITest extends TestCase
      */
     public function testAddUser(API $api)
     {
-        $result = $api->add_user_method('User1', 'User1Pass', 1);
-        $this->assertTrue($result);
-        $result = false;
-        $result = $api->add_user_method('User2', 'User1Pass', 2);
+        $data = (object)[
+            'user' => 'User1',
+            'pass' => 'User1pass',
+            'pr' => 2
+        ];
+        $result = $api->add_user_method($data);
         $this->assertTrue($result);
         return $api;
     }
@@ -233,7 +236,7 @@ class APITest extends TestCase
     /**
      * @afterClass
      */
-    public static function restoreDatabase()
+    public static function restore()
     {
         $path = realpath(dirname(__FILE__));
         if(copy($path."/../bot.db.bak", $path."/../bot.db"))
