@@ -1,5 +1,6 @@
 <?php
 include 'API.php';
+require_once '../vendor/autoload.php';
 try {
     $key = $_SERVER['HTTP_KEY'];
     $ip = $_SERVER['REMOTE_ADDR'];
