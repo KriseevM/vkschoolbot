@@ -122,7 +122,7 @@ class APITest extends TestCase
      */
     public function testDeleteSubjects(API $api)
     {
-        $data = [
+        $data = (object)[
             'IDs' => [5,6]
         ];
         $expected = 2;
