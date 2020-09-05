@@ -72,6 +72,7 @@ final class API
         }
         $time = time();
         $this->db = new SQLite3($this->path . "/../bot.db");
+        $this->db->exec("PRAGMA foreign_keys = on;");
         $check_query = "SELECT expiration_time, user FROM PassKeys WHERE passkey=:key AND ip=:ip";
         $check_stmt = $this->db->prepare($check_query);
         $check_stmt->bindValue(':key', $key);
