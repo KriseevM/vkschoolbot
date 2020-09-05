@@ -8,7 +8,8 @@ try
     $user = $_POST['user'];
     $pass = $_POST['pass'];
     $key = API::auth($user, $pass, $ip);
-    echo json_encode(['key' => $key]);
+    $api = new API($key, $ip);
+    echo json_encode(['key' => $key, 'username' => $user, 'pr' => $api->pr_level]);
 }
 catch(Exception $e)
 {

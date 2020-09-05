@@ -49,8 +49,8 @@ final class API
     public const ERROR_LOW_PRIVILEGES = "Method can not be executed by this user";
 
     private $path;
-    private $pr_level;
-    private $user;
+    public $pr_level;
+    public $user;
     private SQLite3 $db;
     private static function random_string(): string
     {
@@ -72,6 +72,7 @@ final class API
         }
         $time = time();
         $this->db = new SQLite3($this->path . "/../bot.db");
+        $this->db->exec("PRAGMA foreign_keys = on;");
         $check_query = "SELECT expiration_time, user FROM PassKeys WHERE passkey=:key AND ip=:ip";
         $check_stmt = $this->db->prepare($check_query);
         $check_stmt->bindValue(':key', $key);
