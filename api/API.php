@@ -49,8 +49,8 @@ final class API
     public const ERROR_LOW_PRIVILEGES = "Method can not be executed by this user";
 
     private $path;
-    private $pr_level;
-    private $user;
+    public $pr_level;
+    public $user;
     private SQLite3 $db;
     private static function random_string(): string
     {
