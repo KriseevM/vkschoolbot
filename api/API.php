@@ -183,7 +183,7 @@ final class API
                     'type' => 'array',
                     'items' => (object)[
                         'type' => 'string',
-                        'pattern' => '^[\\wА-Яа-яЁё\\s-]{1,50}$'
+                        'pattern' => '^[\\wА-Яа-яЁё\\s()-]{1,50}$'
                     ],
                     'required' => true
                 ]
