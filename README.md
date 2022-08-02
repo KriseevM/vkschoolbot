@@ -1,4 +1,4 @@
-# vkschoolbot
+# vkschoolbot [ПРОЕКТ ЗАКРЫТ]
 master | development
 -------|------------
 ![Tests](https://github.com/KriseevM/vkschoolbot/workflows/Tests/badge.svg?branch=master) | ![Tests](https://github.com/KriseevM/vkschoolbot/workflows/Tests/badge.svg?branch=development)
